@@ -1,0 +1,30 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) important;
+
+@theme {
+  --font-sans:
+    "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", Arial,
+    sans-serif;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  *,
+  ::before,
+  ::after {
+    @apply box-border;
+  }
+
+  html,
+  body {
+    @apply m-0 min-h-full;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+}

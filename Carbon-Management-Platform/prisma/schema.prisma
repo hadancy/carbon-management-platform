@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum PublicDataType {
+  EMISSION_FACTOR
+  RULE_CONFIG
+  REPORT_TEMPLATE
+}
+
+model School {
+  id          String             @id @default(uuid()) @db.Uuid
+  code        String             @unique @db.VarChar(64)
+  name        String             @db.VarChar(200)
+  status      RecordStatus       @default(ACTIVE)
+  memberships SchoolMembership[]
+  auditLogs   AuditLog[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model User {
+  id                 String              @id @default(uuid()) @db.Uuid
+  email              String              @unique @db.VarChar(320)
+  displayName        String              @db.VarChar(120)
+  emailVerified      Boolean             @default(false)
+  image              String?
+  role               String?             @db.VarChar(100)
+  banned             Boolean?            @default(false)
+  banReason          String?
+  banExpires         DateTime?
+  status             RecordStatus        @default(ACTIVE)
+  deletedAt          DateTime?
+  memberships        SchoolMembership[]
+  platformRoles      PlatformRole[]
+  sessions           Session[]
+  accounts           Account[]
+  auditLogs          AuditLog[]
+  publicDataVersions PublicDataVersion[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+model Session {
+  id             String   @id @db.Uuid
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String   @db.Uuid
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model SchoolMembership {
+  schoolId  String       @db.Uuid
+  userId    String       @db.Uuid
+  role      String       @db.VarChar(64)
+  status    RecordStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  school    School       @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([schoolId, userId])
+  @@index([userId, status])
+}
+
+model PlatformRole {
+  userId    String       @db.Uuid
+  role      String       @db.VarChar(64)
+  status    RecordStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([userId, role])
+}
+
+model PublicDataVersion {
+  id          String            @id @default(uuid()) @db.Uuid
+  type        PublicDataType
+  code        String            @db.VarChar(80)
+  version     String            @db.VarChar(40)
+  title       String            @db.VarChar(200)
+  source      String?
+  content     Json
+  status      PublicationStatus @default(DRAFT)
+  createdById String            @db.Uuid
+  createdBy   User              @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime          @default(now())
+  publishedAt DateTime?
+
+  @@unique([type, code, version])
+  @@index([status, type])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String   @db.Uuid
+  actor      User     @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  schoolId   String?  @db.Uuid
+  school     School?  @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  action     String   @db.VarChar(80)
+  targetType String   @db.VarChar(80)
+  targetId   String   @db.VarChar(80)
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([schoolId, createdAt])
+}

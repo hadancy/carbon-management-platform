@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>碳管理平台</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 顶部导航栏 -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <span class="logo">🌍 碳管理平台</span>
+            </div>
+            <div class="topbar-right">
+                <span class="user">管理员</span>
+            </div>
+        </header>
+
+        <div class="body">
+            <!-- 侧边栏 -->
+            <aside class="sidebar" id="sidebar">
+                <nav class="nav">
+                    <div class="nav-item has-children" data-module="product-carbon-footprint">
+                        <div class="nav-item-title" id="toggle-pcf">
+                            <span class="nav-icon">🏭</span>
+                            <span class="nav-text">产品碳足迹</span>
+                            <span class="nav-arrow">▾</span>
+                        </div>
+                        <ul class="nav-children" id="children-pcf">
+                            <li class="nav-child" data-route="product-carbon-model">
+                                <a href="#/product-carbon-model">碳模型</a>
+                            </li>
+                            <li class="nav-child" data-route="product-carbon-model-train">
+                                <a href="#/product-carbon-model-train">碳足迹模型</a>
+                            </li>
+                            <li class="nav-child" data-route="product-carbon-accounting">
+                                <a href="#/product-carbon-accounting">产品碳排放</a>
+                            </li>
+                            <li class="nav-child" data-route="product-carbon-accounting-train">
+                                <a href="#/product-carbon-accounting-train">碳足迹核算</a>
+                            </li>
+                            <li class="nav-child" data-route="carbon-footprint-report">
+                                <a href="#/carbon-footprint-report">碳足迹报告</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                <div class="sidebar-footer">
+                    <button class="sidebar-manage-btn" id="sidebar-manage-btn" type="button">
+                        <svg class="manage-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        <span>模块管理</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- 主内容区 -->
+            <main class="main" id="main">
+                <div id="page-container"></div>
+            </main>
+        </div>
+    </div>
+
+    <script src="js/app.js?v=20250923e-emission-chart"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+.DS_Store
+**/node_modules/
+**/.next/
+**/dist/
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.test.example
+!**/.env.production.example
+**/src/generated/
+**/*.tsbuildinfo
+**/next-env.d.ts
