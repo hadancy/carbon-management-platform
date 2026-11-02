@@ -4,6 +4,7 @@ import { Avatar, Drawer, Flex, Layout, Menu, Typography } from "antd";
 import type { MenuProps } from "antd";
 import type { useRouter } from "next/navigation";
 import type { BackendNavigationItem } from "../backend-shell";
+import { requestNavigation } from "./navigation-guard";
 
 type Props = {
   navigation: BackendNavigationItem[];
@@ -48,9 +49,12 @@ export function BackendNavigation({
       className="flex-1 border-0 bg-[#304156] text-sm [&_.ant-menu-item]:m-0 [&_.ant-menu-item]:w-full [&_.ant-menu-item]:rounded-none [&_.ant-menu-item-selected]:bg-[#1f2d3d] [&_.ant-menu-item-selected]:text-[#409eff]"
       aria-label={sectionLabel}
       onClick={({ key }) => {
-        remember(key);
-        setDrawerOpen(false);
-        router.push(key);
+        if (key === activeKey) return;
+        requestNavigation(() => {
+          remember(key);
+          setDrawerOpen(false);
+          router.push(key);
+        });
       }}
     />
   );

@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-07",
+  "syntheticOnly": true,
+  "originalDatabaseUntouched": true,
+  "manualCaseCode": "AUDIT_UI_PV_001",
+  "finalCaseRevision": 2,
+  "finalReportCode": "AUDIT_UI_REPORT_002",
+  "finalReportRevision": 1,
+  "oldPdfUnchangedAfterCaseRevision": true,
+  "oldPdfHash": "2d3ee7cac64154b4ca937ed74c31165e5f7bfad342421a425c3846f38040f7d2",
+  "correctedPdfHash": "c6719acb8e7a6b210f9da94a25d517ef35310d04de897b468a7334f3c1e4ce04",
+  "correctedPdfBytes": 379230,
+  "correctedFixtureNote": "Annual generation method inherited from DEMO was corrected in a new revision; original report snapshot was retained.",
+  "sourceAnnualYears": 25,
+  "probes": [
+    {
+      "label": "malformed-case-api",
+      "status": 400,
+      "genericApplicationError": false,
+      "notFound": false,
+      "containsForeignProduct": false
+    },
+    {
+      "label": "cross-school-case-api",
+      "status": 404,
+      "genericApplicationError": false,
+      "notFound": false,
+      "containsForeignProduct": false
+    },
+    {
+      "label": "missing-case-api",
+      "status": 404,
+      "genericApplicationError": false,
+      "notFound": false,
+      "containsForeignProduct": false
+    },
+    {
+      "label": "malformed-case-page",
+      "status": 500,
+      "genericApplicationError": false,
+      "notFound": false,
+      "containsForeignProduct": false
+    },
+    {
+      "label": "cross-school-case-page",
+      "status": 500,
+      "genericApplicationError": false,
+      "notFound": false,
+      "containsForeignProduct": false
+    },
+    {
+      "label": "malformed-report-page",
+      "status": 404,
+      "genericApplicationError": false,
+      "notFound": false,
+      "containsForeignProduct": false
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Card, Flex, Space, Table, Tag, Typography } from "antd";
+import { parseEmissionFactorContent } from "@/shared/emission-factors";
+import { factorUnitLabel, isKnownUnit } from "@/shared/units";
 import type { Entry } from "./types";
 import { typeLabels } from "./types";
 
@@ -7,10 +9,28 @@ type Props = {
   entries: Entry[];
   create: () => void;
   edit: (entry: Entry) => void;
-  publish: (entry: Entry) => Promise<void>;
+  publish: (entry: Entry) => void;
+  copyFactor: (entry: Entry) => void;
+  retire: (entry: Entry) => void;
 };
 
-export function PublicDataTable({ entries, create, edit, publish }: Props) {
+function factorSummary(entry: Entry) {
+  if (entry.type !== "EMISSION_FACTOR") return "—";
+  const factor = parseEmissionFactorContent(entry.content);
+  if (!factor) return "旧格式，待核对";
+  return factor.value && isKnownUnit(factor.activityUnit)
+    ? `${factor.value} ${factorUnitLabel(factor.activityUnit)}`
+    : "待填写";
+}
+
+export function PublicDataTable({
+  entries,
+  create,
+  edit,
+  publish,
+  copyFactor,
+  retire,
+}: Props) {
   return (
     <Card
       className="border-0 shadow-none [&_.ant-card-body]:p-0"
@@ -35,7 +55,7 @@ export function PublicDataTable({ entries, create, edit, publish }: Props) {
         rowKey="id"
         dataSource={entries}
         pagination={{ pageSize: 10 }}
-        scroll={{ x: 800 }}
+        scroll={{ x: 920 }}
         expandable={{
           expandedRowRender: (entry) => (
             <pre className="whitespace-pre-wrap">{entry.content}</pre>
@@ -48,10 +68,26 @@ export function PublicDataTable({ entries, create, edit, publish }: Props) {
           { title: "标题", dataIndex: "title" },
           { title: "来源", dataIndex: "source" },
           {
+            title: "因子数值/单位",
+            render: (_, entry) => factorSummary(entry),
+          },
+          {
             title: "状态",
             render: (_, entry) => (
-              <Tag color={entry.status === "PUBLISHED" ? "green" : "default"}>
-                {entry.status === "PUBLISHED" ? "已发布" : "草稿"}
+              <Tag
+                color={
+                  entry.retiredAt
+                    ? "orange"
+                    : entry.status === "PUBLISHED"
+                      ? "green"
+                      : "default"
+                }
+              >
+                {entry.retiredAt
+                  ? "已停用"
+                  : entry.status === "PUBLISHED"
+                    ? "已发布"
+                    : "草稿"}
               </Tag>
             ),
           },
@@ -70,6 +106,26 @@ export function PublicDataTable({ entries, create, edit, publish }: Props) {
                   >
                     发布
                   </Button>
+                </Space>
+              ) : entry.type === "EMISSION_FACTOR" ? (
+                <Space>
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => copyFactor(entry)}
+                  >
+                    升级为新版本
+                  </Button>
+                  {!entry.retiredAt && (
+                    <Button
+                      type="link"
+                      size="small"
+                      danger
+                      onClick={() => retire(entry)}
+                    >
+                      停用
+                    </Button>
+                  )}
                 </Space>
               ) : (
                 <Typography.Text type="secondary">只读</Typography.Text>

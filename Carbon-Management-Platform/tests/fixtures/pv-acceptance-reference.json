@@ -1,0 +1,937 @@
+{
+  "schemaVersion": 1,
+  "caseId": "STD-PV-REF-001",
+  "caseKind": "PUBLIC_REFERENCE",
+  "schoolId": "00000000-0000-4000-8000-000000000300",
+  "snapshot": {
+    "modelVersion": {
+      "id": "00000000-0000-4000-8000-000000000200",
+      "code": "STD_PV_REF",
+      "version": 1,
+      "content": {
+        "name": "STD-PV-REF-001 工程参考模型",
+        "functionalQuantity": 1,
+        "functionalUnit": "kWh",
+        "functionalDescription": "1 kWh",
+        "boundary": "构造五阶段工程边界，非真实项目完整清单",
+        "boundaryDiagram": "",
+        "referenceStandard": "GB/T 47652—2026（工程参考）",
+        "description": "所有活动量为假设，仅工程测试",
+        "stages": [
+          {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "name": "RS",
+            "categories": [
+              {
+                "id": "00000000-0000-4000-8000-000000000011",
+                "name": "工程参考",
+                "items": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000021",
+                    "dataName": "普通硅酸盐水泥",
+                    "specModel": "",
+                    "manufacturer": "",
+                    "carbonFootprintFactor": "",
+                    "functionalUnit": "t",
+                    "emissionFactor": "",
+                    "factorSource": "GB/T 47652—2026 表 A.2（引自 GB/T 51366—2019）",
+                    "dataSource": "构造的工程算术量"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "name": "TR",
+            "categories": [
+              {
+                "id": "00000000-0000-4000-8000-000000000012",
+                "name": "工程参考",
+                "items": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000022",
+                    "dataName": "重型柴油货车运输（载重18t）",
+                    "specModel": "",
+                    "manufacturer": "",
+                    "carbonFootprintFactor": "",
+                    "functionalUnit": "t_km",
+                    "emissionFactor": "",
+                    "factorSource": "GB/T 47652—2026 表 A.3（引自 GB/T 51366—2019）",
+                    "dataSource": "构造的工程算术量"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000003",
+            "name": "CS",
+            "categories": [
+              {
+                "id": "00000000-0000-4000-8000-000000000013",
+                "name": "工程参考",
+                "items": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000023",
+                    "dataName": "施工外购电力",
+                    "specModel": "",
+                    "manufacturer": "",
+                    "carbonFootprintFactor": "",
+                    "functionalUnit": "kWh",
+                    "emissionFactor": "",
+                    "factorSource": "2024 年全国电力碳足迹因子 表 1；标准表 A.4",
+                    "dataSource": "构造的工程算术量"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "name": "US",
+            "categories": [
+              {
+                "id": "00000000-0000-4000-8000-000000000014",
+                "name": "工程参考",
+                "items": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000024",
+                    "dataName": "生产及退役外购电力",
+                    "specModel": "",
+                    "manufacturer": "",
+                    "carbonFootprintFactor": "",
+                    "functionalUnit": "kWh",
+                    "emissionFactor": "",
+                    "factorSource": "2024 年全国电力碳足迹因子 表 1；标准表 A.4",
+                    "dataSource": "构造的工程算术量"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000005",
+            "name": "TD",
+            "categories": [
+              {
+                "id": "00000000-0000-4000-8000-000000000015",
+                "name": "工程参考",
+                "items": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000025",
+                    "dataName": "输配电（不含线损）",
+                    "specModel": "",
+                    "manufacturer": "",
+                    "carbonFootprintFactor": "",
+                    "functionalUnit": "kWh",
+                    "emissionFactor": "",
+                    "factorSource": "2024 年全国电力碳足迹因子 表 3；标准表 A.6",
+                    "dataSource": "构造的工程算术量"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "calculationProfile": {
+          "product": "PV",
+          "formula": "PV_GRID_V1",
+          "stageMappings": [
+            {
+              "stageId": "00000000-0000-4000-8000-000000000001",
+              "calculationStage": "RS"
+            },
+            {
+              "stageId": "00000000-0000-4000-8000-000000000002",
+              "calculationStage": "TR"
+            },
+            {
+              "stageId": "00000000-0000-4000-8000-000000000003",
+              "calculationStage": "CS"
+            },
+            {
+              "stageId": "00000000-0000-4000-8000-000000000004",
+              "calculationStage": "US"
+            },
+            {
+              "stageId": "00000000-0000-4000-8000-000000000005",
+              "calculationStage": "TD"
+            }
+          ],
+          "itemMappings": [
+            {
+              "itemId": "00000000-0000-4000-8000-000000000021",
+              "role": "ACTIVITY",
+              "factorActivityUnit": "t"
+            },
+            {
+              "itemId": "00000000-0000-4000-8000-000000000022",
+              "role": "TRANSPORT",
+              "factorActivityUnit": "t_km"
+            },
+            {
+              "itemId": "00000000-0000-4000-8000-000000000023",
+              "role": "ACTIVITY",
+              "factorActivityUnit": "kWh"
+            },
+            {
+              "itemId": "00000000-0000-4000-8000-000000000024",
+              "role": "ACTIVITY",
+              "factorActivityUnit": "kWh"
+            },
+            {
+              "itemId": "00000000-0000-4000-8000-000000000025",
+              "role": "GRID_FACTOR",
+              "factorActivityUnit": "kWh"
+            }
+          ]
+        }
+      }
+    },
+    "factors": [
+      {
+        "id": "00000000-0000-4000-8000-000000000100",
+        "code": "STD_REF_RS",
+        "version": "1",
+        "type": "EMISSION_FACTOR",
+        "status": "PUBLISHED",
+        "content": {
+          "schemaVersion": 2,
+          "purpose": "TEST",
+          "value": "735",
+          "activityUnit": "t",
+          "emissionUnit": "kgCO2e",
+          "note": "因子有标准来源；活动量和适用期间为工程参考假设，不能用于正式验收",
+          "applicability": {
+            "product": "PV",
+            "stage": "RS",
+            "subject": "普通硅酸盐水泥",
+            "region": "ALL",
+            "technology": "ALL",
+            "validFrom": "2024-01-01",
+            "validTo": "2060-12-31",
+            "dataYear": 2019,
+            "boundary": "工程五阶段参考；只覆盖声明的算术输入"
+          },
+          "evidence": {
+            "sourceCategory": "STANDARD_APPENDIX",
+            "issuer": "GB/T 47652—2026",
+            "reference": "GB/T 47652—2026 表 A.2（引自 GB/T 51366—2019）",
+            "publishedAt": "2026-07-02",
+            "originalValue": "735",
+            "conversion": "单位沿用来源，未换算因子数值",
+            "license": "公开文件参考；本包仅工程 TEST"
+          },
+          "governance": {
+            "basis": "GB/T 47652—2026 表 A.2（引自 GB/T 51366—2019）",
+            "changeReason": "首个公开来源工程参考",
+            "supersedesVersionId": null
+          }
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000101",
+        "code": "STD_REF_TR",
+        "version": "1",
+        "type": "EMISSION_FACTOR",
+        "status": "PUBLISHED",
+        "content": {
+          "schemaVersion": 2,
+          "purpose": "TEST",
+          "value": "0.129",
+          "activityUnit": "t_km",
+          "emissionUnit": "kgCO2e",
+          "note": "因子有标准来源；活动量和适用期间为工程参考假设，不能用于正式验收",
+          "applicability": {
+            "product": "PV",
+            "stage": "TR",
+            "subject": "重型柴油货车运输（载重18t）",
+            "region": "ALL",
+            "technology": "ALL",
+            "validFrom": "2024-01-01",
+            "validTo": "2060-12-31",
+            "dataYear": 2019,
+            "boundary": "工程五阶段参考；只覆盖声明的算术输入"
+          },
+          "evidence": {
+            "sourceCategory": "STANDARD_APPENDIX",
+            "issuer": "GB/T 47652—2026",
+            "reference": "GB/T 47652—2026 表 A.3（引自 GB/T 51366—2019）",
+            "publishedAt": "2026-07-02",
+            "originalValue": "0.129",
+            "conversion": "单位沿用来源，未换算因子数值",
+            "license": "公开文件参考；本包仅工程 TEST"
+          },
+          "governance": {
+            "basis": "GB/T 47652—2026 表 A.3（引自 GB/T 51366—2019）",
+            "changeReason": "首个公开来源工程参考",
+            "supersedesVersionId": null
+          }
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000102",
+        "code": "STD_REF_CS",
+        "version": "1",
+        "type": "EMISSION_FACTOR",
+        "status": "PUBLISHED",
+        "content": {
+          "schemaVersion": 2,
+          "purpose": "TEST",
+          "value": "0.5777",
+          "activityUnit": "kWh",
+          "emissionUnit": "kgCO2e",
+          "note": "因子有标准来源；活动量和适用期间为工程参考假设，不能用于正式验收",
+          "applicability": {
+            "product": "PV",
+            "stage": "CS",
+            "subject": "施工外购电力",
+            "region": "ALL",
+            "technology": "ALL",
+            "validFrom": "2024-01-01",
+            "validTo": "2060-12-31",
+            "dataYear": 2024,
+            "boundary": "工程五阶段参考；只覆盖声明的算术输入"
+          },
+          "evidence": {
+            "sourceCategory": "GOVERNMENT",
+            "issuer": "生态环境部、国家统计局、国家能源局",
+            "reference": "2024 年全国电力碳足迹因子 表 1；标准表 A.4",
+            "publishedAt": "2025-10-23",
+            "originalValue": "0.5777",
+            "conversion": "单位沿用来源，未换算因子数值",
+            "license": "公开文件参考；本包仅工程 TEST"
+          },
+          "governance": {
+            "basis": "2024 年全国电力碳足迹因子 表 1；标准表 A.4",
+            "changeReason": "首个公开来源工程参考",
+            "supersedesVersionId": null
+          }
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000103",
+        "code": "STD_REF_US",
+        "version": "1",
+        "type": "EMISSION_FACTOR",
+        "status": "PUBLISHED",
+        "content": {
+          "schemaVersion": 2,
+          "purpose": "TEST",
+          "value": "0.5777",
+          "activityUnit": "kWh",
+          "emissionUnit": "kgCO2e",
+          "note": "因子有标准来源；活动量和适用期间为工程参考假设，不能用于正式验收",
+          "applicability": {
+            "product": "PV",
+            "stage": "US",
+            "subject": "生产及退役外购电力",
+            "region": "ALL",
+            "technology": "ALL",
+            "validFrom": "2024-01-01",
+            "validTo": "2060-12-31",
+            "dataYear": 2024,
+            "boundary": "工程五阶段参考；只覆盖声明的算术输入"
+          },
+          "evidence": {
+            "sourceCategory": "GOVERNMENT",
+            "issuer": "生态环境部、国家统计局、国家能源局",
+            "reference": "2024 年全国电力碳足迹因子 表 1；标准表 A.4",
+            "publishedAt": "2025-10-23",
+            "originalValue": "0.5777",
+            "conversion": "单位沿用来源，未换算因子数值",
+            "license": "公开文件参考；本包仅工程 TEST"
+          },
+          "governance": {
+            "basis": "2024 年全国电力碳足迹因子 表 1；标准表 A.4",
+            "changeReason": "首个公开来源工程参考",
+            "supersedesVersionId": null
+          }
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000104",
+        "code": "STD_REF_TD",
+        "version": "1",
+        "type": "EMISSION_FACTOR",
+        "status": "PUBLISHED",
+        "content": {
+          "schemaVersion": 2,
+          "purpose": "TEST",
+          "value": "0.0046",
+          "activityUnit": "kWh",
+          "emissionUnit": "kgCO2e",
+          "note": "因子有标准来源；活动量和适用期间为工程参考假设，不能用于正式验收",
+          "applicability": {
+            "product": "PV",
+            "stage": "TD",
+            "subject": "输配电（不含线损）",
+            "region": "ALL",
+            "technology": "ALL",
+            "validFrom": "2024-01-01",
+            "validTo": "2060-12-31",
+            "dataYear": 2024,
+            "boundary": "工程五阶段参考；只覆盖声明的算术输入"
+          },
+          "evidence": {
+            "sourceCategory": "GOVERNMENT",
+            "issuer": "生态环境部、国家统计局、国家能源局",
+            "reference": "2024 年全国电力碳足迹因子 表 3；标准表 A.6",
+            "publishedAt": "2025-10-23",
+            "originalValue": "0.0046",
+            "conversion": "单位沿用来源，未换算因子数值",
+            "license": "公开文件参考；本包仅工程 TEST"
+          },
+          "governance": {
+            "basis": "2024 年全国电力碳足迹因子 表 3；标准表 A.6",
+            "changeReason": "首个公开来源工程参考",
+            "supersedesVersionId": null
+          }
+        }
+      }
+    ],
+    "inputs": {
+      "specification": "工程参考五阶段",
+      "measurementUnit": "kWh",
+      "projectLocation": "测试地点",
+      "collectionStart": "2026-01-01",
+      "collectionEnd": "2026-12-31",
+      "boundaryNote": "人为构造算术边界，非完整项目设备清单",
+      "exclusionNote": "无",
+      "referenceDate": "2026-10-07",
+      "region": "中国",
+      "technology": "光伏",
+      "operatingYears": 25,
+      "annualEnergy": [
+        {
+          "operatingYear": 1,
+          "periodStart": "2026-01-01",
+          "periodEnd": "2026-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 2,
+          "periodStart": "2027-01-01",
+          "periodEnd": "2027-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 3,
+          "periodStart": "2028-01-01",
+          "periodEnd": "2028-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 4,
+          "periodStart": "2029-01-01",
+          "periodEnd": "2029-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 5,
+          "periodStart": "2030-01-01",
+          "periodEnd": "2030-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 6,
+          "periodStart": "2031-01-01",
+          "periodEnd": "2031-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 7,
+          "periodStart": "2032-01-01",
+          "periodEnd": "2032-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 8,
+          "periodStart": "2033-01-01",
+          "periodEnd": "2033-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 9,
+          "periodStart": "2034-01-01",
+          "periodEnd": "2034-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 10,
+          "periodStart": "2035-01-01",
+          "periodEnd": "2035-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 11,
+          "periodStart": "2036-01-01",
+          "periodEnd": "2036-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 12,
+          "periodStart": "2037-01-01",
+          "periodEnd": "2037-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 13,
+          "periodStart": "2038-01-01",
+          "periodEnd": "2038-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 14,
+          "periodStart": "2039-01-01",
+          "periodEnd": "2039-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 15,
+          "periodStart": "2040-01-01",
+          "periodEnd": "2040-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 16,
+          "periodStart": "2041-01-01",
+          "periodEnd": "2041-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 17,
+          "periodStart": "2042-01-01",
+          "periodEnd": "2042-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 18,
+          "periodStart": "2043-01-01",
+          "periodEnd": "2043-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 19,
+          "periodStart": "2044-01-01",
+          "periodEnd": "2044-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 20,
+          "periodStart": "2045-01-01",
+          "periodEnd": "2045-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 21,
+          "periodStart": "2046-01-01",
+          "periodEnd": "2046-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 22,
+          "periodStart": "2047-01-01",
+          "periodEnd": "2047-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 23,
+          "periodStart": "2048-01-01",
+          "periodEnd": "2048-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 24,
+          "periodStart": "2049-01-01",
+          "periodEnd": "2049-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        },
+        {
+          "operatingYear": 25,
+          "periodStart": "2050-01-01",
+          "periodEnd": "2050-12-31",
+          "source": "ESTIMATED",
+          "value": "4000",
+          "unit": "kWh",
+          "evidence": "人为构造的工程算术量",
+          "evidenceAssetIds": [],
+          "method": "每年固定4000，仅 TEST"
+        }
+      ],
+      "directSupplyKwh": "0",
+      "lossRatio": "0.05",
+      "transmissionMethod": "GRID_FACTOR_FALLBACK",
+      "transmissionFallbackReason": "构造工程条件假定 SF6 数据不可得；不是实际项目复核",
+      "lines": [
+        {
+          "itemId": "00000000-0000-4000-8000-000000000021",
+          "state": "RECORDED",
+          "factorVersionId": "00000000-0000-4000-8000-000000000100",
+          "activityDate": "2026-10-07",
+          "evidence": "公开来源工程算术假设",
+          "evidenceAssetIds": [],
+          "location": "测试地点",
+          "process": "测试过程",
+          "measurementMethod": "构造算术输入",
+          "sourceType": "ESTIMATED",
+          "estimationMethod": "人工构造，非实测",
+          "value": "2000",
+          "unit": "kg"
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000022",
+          "state": "RECORDED",
+          "factorVersionId": "00000000-0000-4000-8000-000000000101",
+          "activityDate": "2026-10-07",
+          "evidence": "公开来源工程算术假设",
+          "evidenceAssetIds": [],
+          "location": "测试地点",
+          "process": "测试过程",
+          "measurementMethod": "构造算术输入",
+          "sourceType": "ESTIMATED",
+          "estimationMethod": "人工构造，非实测",
+          "weight": "2000",
+          "weightUnit": "kg",
+          "distance": "100000",
+          "distanceUnit": "m"
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000023",
+          "state": "RECORDED",
+          "factorVersionId": "00000000-0000-4000-8000-000000000102",
+          "activityDate": "2026-10-07",
+          "evidence": "公开来源工程算术假设",
+          "evidenceAssetIds": [],
+          "location": "测试地点",
+          "process": "测试过程",
+          "measurementMethod": "构造算术输入",
+          "sourceType": "ESTIMATED",
+          "estimationMethod": "人工构造，非实测",
+          "value": "1000",
+          "unit": "kWh"
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000024",
+          "state": "RECORDED",
+          "factorVersionId": "00000000-0000-4000-8000-000000000103",
+          "activityDate": "2026-10-07",
+          "evidence": "公开来源工程算术假设",
+          "evidenceAssetIds": [],
+          "location": "测试地点",
+          "process": "测试过程",
+          "measurementMethod": "构造算术输入",
+          "sourceType": "ESTIMATED",
+          "estimationMethod": "人工构造，非实测",
+          "value": "2000",
+          "unit": "kWh"
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000025",
+          "state": "RECORDED",
+          "factorVersionId": "00000000-0000-4000-8000-000000000104",
+          "activityDate": "2026-10-07",
+          "evidence": "公开来源工程算术假设",
+          "evidenceAssetIds": [],
+          "location": "测试地点",
+          "process": "测试过程",
+          "measurementMethod": "构造算术输入",
+          "sourceType": "ESTIMATED",
+          "estimationMethod": "人工构造，非实测"
+        }
+      ]
+    },
+    "assets": [],
+    "ruleVersion": {
+      "id": "00000000-0000-4000-8000-000000000400",
+      "code": "STD_REF_RULE",
+      "version": "1",
+      "content": {
+        "schemaVersion": 1,
+        "purpose": "TEST",
+        "product": "PV",
+        "scenario": "GRID_ONLY",
+        "formula": "PV_GRID_V1",
+        "standardReference": "GB/T 47652—2026 8.1～8.7；尚未用于业务签认",
+        "effectiveFrom": "2024-01-01",
+        "effectiveTo": "2060-12-31",
+        "approvalReference": "工程参考方案，未获业务签认"
+      }
+    },
+    "scenario": "GRID_ONLY",
+    "mode": "TRIAL"
+  },
+  "expected": {
+    "method": "EXTERNAL_TOOL",
+    "description": "Python Decimal 80 位独立四则运算；见逐项算术说明",
+    "evidenceId": "INDEPENDENT_EXPECTED",
+    "absoluteTolerance": "0.000000000001",
+    "lines": [
+      {
+        "itemId": "00000000-0000-4000-8000-000000000021",
+        "normalizedActivity": "2",
+        "emissionsKg": "1470"
+      },
+      {
+        "itemId": "00000000-0000-4000-8000-000000000022",
+        "normalizedActivity": "200",
+        "emissionsKg": "25.800"
+      },
+      {
+        "itemId": "00000000-0000-4000-8000-000000000023",
+        "normalizedActivity": "1000",
+        "emissionsKg": "577.7000"
+      },
+      {
+        "itemId": "00000000-0000-4000-8000-000000000024",
+        "normalizedActivity": "2000",
+        "emissionsKg": "1155.4000"
+      },
+      {
+        "itemId": "00000000-0000-4000-8000-000000000025",
+        "normalizedActivity": "100000",
+        "emissionsKg": "460.0000"
+      }
+    ],
+    "stagesKg": {
+      "RS": "1470",
+      "TR": "25.800",
+      "CS": "577.7000",
+      "US": "1155.4000",
+      "TD": "460.0000"
+    },
+    "totalEmissionsKg": "3688.9000",
+    "gridEnergyKwh": "100000",
+    "deliveredEnergyKwh": "95000",
+    "footprintKgPerKwh": "0.038830526315789473684210526315789473684210526315789473684210526315789473684210526",
+    "display": {
+      "stagesKg": {
+        "RS": "1470.00",
+        "TR": "25.80",
+        "CS": "577.70",
+        "US": "1155.40",
+        "TD": "460.00"
+      },
+      "totalEmissionsKg": "3688.90",
+      "gridEnergyKwh": "100000.00",
+      "footprintKgPerKwh": "0.038831"
+    }
+  },
+  "evidence": [
+    {
+      "id": "INDEPENDENT_EXPECTED",
+      "path": "../../docs/acceptance/pv-reference-handcalc.md",
+      "sha256": "05bd0adbec05667baa3e1dd0deb08c7de3d09fa45ae305079fb29103723e6d7d"
+    },
+    {
+      "id": "LOCAL_STANDARD",
+      "path": "../../../计算公式模型参考文件/GBT+47652-2026温室气体 产品碳足迹量化方法与要求 光伏发电.pdf",
+      "sha256": "bf917ef78160681dcd77f8922e947de658d51cb709b8664bad95474dc5e7276e"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "B01",
+      "status": "PENDING",
+      "conclusion": "",
+      "confirmedBy": "",
+      "confirmedAt": null,
+      "evidenceIds": [],
+      "scopeHash": ""
+    },
+    {
+      "id": "B02",
+      "status": "PENDING",
+      "conclusion": "",
+      "confirmedBy": "",
+      "confirmedAt": null,
+      "evidenceIds": [],
+      "scopeHash": ""
+    },
+    {
+      "id": "B03",
+      "status": "PENDING",
+      "conclusion": "",
+      "confirmedBy": "",
+      "confirmedAt": null,
+      "evidenceIds": [],
+      "scopeHash": ""
+    },
+    {
+      "id": "B04",
+      "status": "PENDING",
+      "conclusion": "",
+      "confirmedBy": "",
+      "confirmedAt": null,
+      "evidenceIds": [],
+      "scopeHash": ""
+    },
+    {
+      "id": "B05",
+      "status": "PENDING",
+      "conclusion": "",
+      "confirmedBy": "",
+      "confirmedAt": null,
+      "evidenceIds": [],
+      "scopeHash": ""
+    },
+    {
+      "id": "B06",
+      "status": "PENDING",
+      "conclusion": "",
+      "confirmedBy": "",
+      "confirmedAt": null,
+      "evidenceIds": [],
+      "scopeHash": ""
+    }
+  ],
+  "signoff": {
+    "preparedBy": "",
+    "reviewedBy": "",
+    "acceptedBy": "",
+    "acceptedAt": null,
+    "evidenceId": "",
+    "scopeHash": ""
+  },
+  "workflow": [
+    {
+      "id": "REVIEW_REVISION",
+      "status": "PENDING",
+      "evidenceId": "",
+      "scopeHash": ""
+    },
+    {
+      "id": "CROSS_SCHOOL",
+      "status": "PENDING",
+      "evidenceId": "",
+      "scopeHash": ""
+    },
+    {
+      "id": "HISTORY_FROZEN",
+      "status": "PENDING",
+      "evidenceId": "",
+      "scopeHash": ""
+    }
+  ]
+}

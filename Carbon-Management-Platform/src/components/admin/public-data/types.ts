@@ -8,6 +8,7 @@ export type Entry = {
   status: "DRAFT" | "PUBLISHED";
   content: string;
   publishedAt: string | null;
+  retiredAt: string | null;
 };
 export type PublicDataForm = {
   type: Entry["type"];
@@ -16,6 +17,43 @@ export type PublicDataForm = {
   title: string;
   source?: string;
   contentText: string;
+  rulePurpose?: "TEST" | "PRODUCTION";
+  ruleStandardReference?: string;
+  ruleEffectiveFrom?: string;
+  ruleEffectiveTo?: string;
+  ruleApprovalReference?: string;
+  templatePurpose?: "TEST" | "PRODUCTION";
+  templateTitleSuffix?: string;
+  templatePreparedBy?: string;
+  templateApprovalReference?: string;
+  templateDefaults?: Partial<
+    Record<
+      "purpose" | "methodology" | "dataQuality" | "conclusion" | "limitations",
+      string
+    >
+  >;
+  factorValue?: string;
+  factorActivityUnit?: string;
+  factorNote?: string;
+  factorPurpose?: "TEST" | "PRODUCTION";
+  factorStage?: "RS" | "TR" | "CS" | "US" | "TD";
+  factorSubject?: string;
+  factorRegion?: string;
+  factorTechnology?: string;
+  factorValidFrom?: string;
+  factorValidTo?: string;
+  factorDataYear?: number;
+  factorBoundary?: string;
+  factorSourceCategory?: string;
+  factorIssuer?: string;
+  factorReference?: string;
+  factorPublishedAt?: string;
+  factorOriginalValue?: string;
+  factorConversion?: string;
+  factorLicense?: string;
+  factorBasis?: string;
+  factorChangeReason?: string;
+  factorSupersedesVersionId?: string | null;
 };
 export const typeLabels: Record<Entry["type"], string> = {
   EMISSION_FACTOR: "公共排放因子",

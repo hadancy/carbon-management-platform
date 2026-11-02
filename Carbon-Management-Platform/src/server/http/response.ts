@@ -1,3 +1,4 @@
+import { logFailure } from "./log";
 import { Prisma } from "@/generated/prisma/client";
 import { ZodError } from "zod";
 import { AccessError } from "@/server/auth/access";
@@ -25,6 +26,9 @@ export function errorResponse(error: unknown): Response {
     return Response.json({ error: "编码、版本或账号已存在" }, { status: 409 });
   }
 
-  console.error("Request failed", error);
-  return Response.json({ error: "服务暂时不可用" }, { status: 500 });
+  const requestId = logFailure("request.failed", error);
+  return Response.json(
+    { error: "服务暂时不可用", requestId },
+    { status: 500, headers: { "X-Request-Id": requestId } },
+  );
 }

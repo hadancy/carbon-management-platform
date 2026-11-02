@@ -1,16 +1,52 @@
-import { ModuleLanding } from "@/components/module-landing";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getActiveSchoolContext, requirePrincipal } from "@/server/auth/access";
+import { listCases } from "@/server/accounting/cases";
+import { db } from "@/server/db/client";
+import { canSchool } from "@/shared/permissions";
+import { AccountingList } from "@/components/accounting/accounting-list";
 
-export default function AccountingPage() {
+export default async function AccountingPage() {
+  const principal = await requirePrincipal(await headers());
+  const context = await getActiveSchoolContext(
+    principal,
+    (await cookies()).get("active_school")?.value,
+  );
+  if (!context) redirect("/no-school");
+  const [cases, versions] = await Promise.all([
+    listCases(context.schoolId),
+    db.modelVersion.findMany({
+      where: {
+        status: "PUBLISHED",
+        model: {
+          scope: "SCHOOL",
+          schoolId: context.schoolId,
+          archivedAt: null,
+        },
+      },
+      include: { model: { select: { code: true } } },
+      orderBy: { publishedAt: "desc" },
+    }),
+  ]);
   return (
-    <ModuleLanding
-      index="02"
-      title="碳足迹核算"
-      description="选择已发布模型，录入活动数据，生成可追溯的核算结果。"
-      steps={[
-        "创建核算案例并选择模型版本",
-        "录入活动数据和证据",
-        "服务端计算、复核和审核",
-      ]}
+    <AccountingList
+      cases={cases.map((entry) => ({
+        id: entry.id,
+        code: entry.code,
+        product: entry.product,
+        currentRevisionId: entry.currentRevisionId,
+        status:
+          entry.revisions.find(
+            (revision) => revision.id === entry.currentRevisionId,
+          )?.status ?? "DRAFT",
+        updatedAt: entry.updatedAt.toISOString(),
+      }))}
+      models={versions.map((version) => ({
+        id: version.id,
+        label: `${version.model.code} v${version.version}`,
+      }))}
+      canWrite={canSchool(context.role, "accounting.write")}
+      canReview={canSchool(context.role, "accounting.review")}
     />
   );
 }

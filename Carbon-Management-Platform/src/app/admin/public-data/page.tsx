@@ -22,6 +22,7 @@ export default async function PublicDataPage() {
         status: entry.status,
         content: JSON.stringify(entry.content, null, 2),
         publishedAt: entry.publishedAt?.toISOString() ?? null,
+        retiredAt: entry.retiredAt?.toISOString() ?? null,
       }))}
     />
   );

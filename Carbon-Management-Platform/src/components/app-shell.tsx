@@ -7,10 +7,11 @@ import {
   FileTextOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import { Alert, App, Button, Select, Space, Typography } from "antd";
+import { App, Button, Select, Space, Typography } from "antd";
 import { authClient } from "@/lib/auth-client";
 import type { Principal } from "@/server/auth/access";
 import { BackendShell } from "./backend-shell";
+import { requestNavigation } from "./backend/navigation-guard";
 
 const navigation = [
   { href: "/models", label: "碳足迹模型", icon: <AppstoreOutlined /> },
@@ -69,7 +70,9 @@ export function AppShell({
           <Select
             aria-label="当前学校"
             value={context.schoolId}
-            onChange={switchSchool}
+            onChange={(schoolId) =>
+              requestNavigation(() => void switchSchool(schoolId))
+            }
             options={context.schools.map((school) => ({
               value: school.id,
               label: school.name,
@@ -80,7 +83,7 @@ export function AppShell({
             <Button
               type="text"
               icon={<SettingOutlined />}
-              onClick={() => router.push("/admin")}
+              onClick={() => requestNavigation(() => router.push("/admin"))}
               className="max-sm:px-1.5 max-sm:text-[0px] max-sm:[&_.anticon]:text-base"
             >
               系统管理
@@ -94,13 +97,6 @@ export function AppShell({
         </Typography.Text>
       }
     >
-      <Alert
-        className="mb-5"
-        type="warning"
-        showIcon
-        title="业务模块仍在建设中"
-        description="登录和学校权限已接入；模型、核算与报告的数据录入将在后续阶段开放。"
-      />
       {children}
     </BackendShell>
   );

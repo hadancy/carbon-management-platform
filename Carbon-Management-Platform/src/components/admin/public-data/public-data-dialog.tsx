@@ -2,36 +2,56 @@ import { Alert, Col, Form, Input, Modal, Row, Select } from "antd";
 import type { FormInstance } from "antd";
 import type { PublicDataForm } from "./types";
 import { typeLabels } from "./types";
+import { EmissionFactorFields } from "./emission-factor-fields";
+import { ReportTemplateFields } from "./report-template-fields";
+import { RuleConfigFields } from "./rule-config-fields";
 
 type Props = {
   editingId: string | null;
+  copyingFactor: boolean;
+  publishMode: boolean;
   modalOpen: boolean;
   closeModal: () => void;
   form: FormInstance<PublicDataForm>;
   save: (values: PublicDataForm) => Promise<void>;
   busy: boolean;
   error: string;
+  legacyFactorContent: string | null;
 };
 
 export function PublicDataDialog({
   editingId,
+  copyingFactor,
+  publishMode,
   modalOpen,
   closeModal,
   form,
   save,
   busy,
   error,
+  legacyFactorContent,
 }: Props) {
+  const type = Form.useWatch("type", form);
+  const activityUnit = Form.useWatch("factorActivityUnit", form);
   return (
     <Modal
-      title={editingId ? "编辑公共数据草稿" : "新增公共数据"}
+      title={
+        publishMode
+          ? "校验并发布公共数据"
+          : editingId
+            ? "编辑公共数据草稿"
+            : copyingFactor
+              ? "从旧因子创建新版本"
+              : "新增公共数据"
+      }
       open={modalOpen}
       onCancel={closeModal}
       onOk={() => form.submit()}
       confirmLoading={busy}
-      okText="保存草稿"
+      okText={publishMode ? "校验并发布" : "保存草稿"}
       cancelText="取消"
-      width={700}
+      width={760}
+      className="[&_.ant-modal-body]:max-h-[68vh] [&_.ant-modal-body]:overflow-y-auto [&_.ant-modal-body]:overflow-x-hidden"
     >
       {error && <Alert type="error" title={error} className="mb-4" />}
       <Form form={form} layout="vertical" onFinish={save}>
@@ -71,16 +91,42 @@ export function PublicDataDialog({
             </Form.Item>
           </Col>
         </Row>
-        <Form.Item label="来源（因子与规则必填）" name="source">
+        <Form.Item
+          label="来源（因子与规则必填）"
+          name="source"
+          rules={[
+            {
+              required: publishMode && type !== "REPORT_TEMPLATE",
+              whitespace: true,
+            },
+          ]}
+        >
           <Input placeholder="标准编号、数据源、适用范围与日期" />
         </Form.Item>
-        <Form.Item
-          label="结构化内容（JSON 对象）"
-          name="contentText"
-          rules={[{ required: true }]}
-        >
-          <Input.TextArea rows={7} placeholder={'{"description":"资料说明"}'} />
-        </Form.Item>
+        {type === "EMISSION_FACTOR" ? (
+          <>
+            {legacyFactorContent && (
+              <Alert
+                type="warning"
+                title="旧版内容仅供核对；请补齐 v2 适用范围、来源和变更依据，保存后会保留原文"
+                description={
+                  <pre className="max-h-40 overflow-auto whitespace-pre-wrap">
+                    {legacyFactorContent}
+                  </pre>
+                }
+                className="mb-4"
+              />
+            )}
+            <EmissionFactorFields
+              activityUnit={activityUnit}
+              publishMode={publishMode}
+            />
+          </>
+        ) : type === "RULE_CONFIG" ? (
+          <RuleConfigFields publishMode={publishMode} />
+        ) : (
+          <ReportTemplateFields publishMode={publishMode} />
+        )}
       </Form>
     </Modal>
   );

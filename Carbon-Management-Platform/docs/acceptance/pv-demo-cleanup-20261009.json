@@ -1,0 +1,393 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-09T06:37:54.867Z",
+  "scope": "LOCAL_PV_DEMO_DATA_CLEANUP",
+  "status": "PASSED",
+  "database": "carbon_management",
+  "planHash": "96317970121c3cee3818adf3f341aa7772e42f0a078bf81a9edd5cb7a830599f",
+  "counts": {
+    "School": {
+      "before": 5,
+      "removed": 3,
+      "retained": 2,
+      "final": 2
+    },
+    "User": {
+      "before": 7,
+      "removed": 3,
+      "retained": 4,
+      "final": 4
+    },
+    "SchoolMembership": {
+      "before": 6,
+      "removed": 3,
+      "retained": 3,
+      "final": 3
+    },
+    "PlatformRole": {
+      "before": 1,
+      "removed": 0,
+      "retained": 1,
+      "final": 1
+    },
+    "Account": {
+      "before": 7,
+      "removed": 3,
+      "retained": 4,
+      "final": 4
+    },
+    "Session": {
+      "before": 7,
+      "removed": 2,
+      "retained": 5,
+      "final": 5
+    },
+    "Verification": {
+      "before": 0,
+      "removed": 0,
+      "retained": 0,
+      "final": 0
+    },
+    "FootprintModel": {
+      "before": 11,
+      "removed": 10,
+      "retained": 1,
+      "final": 1
+    },
+    "ModelVersion": {
+      "before": 10,
+      "removed": 9,
+      "retained": 1,
+      "final": 1
+    },
+    "PublicDataVersion": {
+      "before": 7,
+      "removed": 1,
+      "retained": 6,
+      "final": 6
+    },
+    "AccountingCase": {
+      "before": 1,
+      "removed": 0,
+      "retained": 1,
+      "final": 1
+    },
+    "AccountingRevision": {
+      "before": 3,
+      "removed": 0,
+      "retained": 3,
+      "final": 3
+    },
+    "CalculationRun": {
+      "before": 4,
+      "removed": 0,
+      "retained": 4,
+      "final": 4
+    },
+    "AccountingReview": {
+      "before": 2,
+      "removed": 0,
+      "retained": 2,
+      "final": 2
+    },
+    "FileAsset": {
+      "before": 1,
+      "removed": 0,
+      "retained": 1,
+      "final": 1
+    },
+    "FootprintReport": {
+      "before": 2,
+      "removed": 1,
+      "retained": 1,
+      "final": 1
+    },
+    "ReportRevision": {
+      "before": 6,
+      "removed": 3,
+      "retained": 3,
+      "final": 3
+    },
+    "ReportExport": {
+      "before": 2,
+      "removed": 1,
+      "retained": 1,
+      "final": 1
+    },
+    "AuditLog": {
+      "before": 146,
+      "removed": 96,
+      "retained": 50,
+      "final": 55
+    }
+  },
+  "removedRecordTotal": 135,
+  "removed": {
+    "schools": [
+      {
+        "code": "002",
+        "name": "北京大学"
+      },
+      {
+        "code": "003",
+        "name": "香港大学"
+      },
+      {
+        "code": "001",
+        "name": "清华大学"
+      }
+    ],
+    "testAccountNames": [
+      "test01",
+      "test02",
+      "test03"
+    ],
+    "models": [
+      {
+        "id": "f0ddf4da-9024-43e7-bf77-e3fc673c9106",
+        "code": "PCM-001",
+        "scope": "PUBLIC"
+      },
+      {
+        "id": "a58376a4-ebdb-41a1-99c4-15b338b0a69c",
+        "code": "PCM-001",
+        "scope": "PUBLIC"
+      },
+      {
+        "id": "0f6bcc64-5e54-4655-ba6d-832e63b62aac",
+        "code": "QA_UI_G9IPIN",
+        "scope": "PUBLIC"
+      },
+      {
+        "id": "437a54e3-3292-431b-8ef2-59659e2f3e03",
+        "code": "QA_UI_02LO3G",
+        "scope": "PUBLIC"
+      },
+      {
+        "id": "28851276-c9be-4949-adf0-449dd4281476",
+        "code": "123",
+        "scope": "PUBLIC"
+      },
+      {
+        "id": "81921ee1-48dc-43c5-95e0-f8f475d99707",
+        "code": "PCM-001",
+        "scope": "PUBLIC"
+      },
+      {
+        "id": "fea68ab9-1e30-445b-81fb-0daf529da184",
+        "code": "ZZ001",
+        "scope": "SCHOOL"
+      },
+      {
+        "id": "bb184dc1-0f41-4c11-b622-5a4eb915ac2a",
+        "code": "PCM-002",
+        "scope": "SCHOOL"
+      },
+      {
+        "id": "16738551-9331-4f98-99b8-a3b34ab65539",
+        "code": "PCM-002",
+        "scope": "PUBLIC"
+      },
+      {
+        "id": "930a26f5-d33e-4ea3-9d63-a70a86fac76c",
+        "code": "PCM-002",
+        "scope": "PUBLIC"
+      }
+    ],
+    "publicData": [
+      {
+        "code": "001",
+        "version": "1.0",
+        "title": "测试"
+      }
+    ],
+    "reports": [
+      {
+        "code": "DEMO_REPORT_001"
+      }
+    ]
+  },
+  "retained": {
+    "schools": [
+      {
+        "code": "DEMO_PV_A",
+        "name": "光伏流程演示学校 A"
+      },
+      {
+        "code": "DEMO_PV_B",
+        "name": "光伏流程演示学校 B"
+      }
+    ],
+    "platformAdministrators": 1,
+    "demoAccounts": {
+      "writer": "pv-writer@demo.invalid",
+      "reviewer": "pv-reviewer@demo.invalid",
+      "outsider": "pv-outsider@demo.invalid"
+    },
+    "modelCode": "DEMO_PV_MODEL",
+    "factorCodes": [
+      "DEMO_STD_REF_CS",
+      "DEMO_STD_REF_RS",
+      "DEMO_STD_REF_TD",
+      "DEMO_STD_REF_TR",
+      "DEMO_STD_REF_US"
+    ],
+    "ruleCode": "DEMO_PV_RULE",
+    "case": {
+      "id": "4b427cf5-da65-432e-ac53-2ead7b898cc4",
+      "code": "DEMO_PV_001"
+    },
+    "caseRevisions": [
+      {
+        "number": 3,
+        "status": "DRAFT"
+      },
+      {
+        "number": 2,
+        "status": "APPROVED"
+      },
+      {
+        "number": 1,
+        "status": "REJECTED"
+      }
+    ],
+    "report": {
+      "id": "0b5a15fd-323f-4a42-972a-bb77103d8b5b",
+      "code": "DEMO_REPORT_T07"
+    },
+    "reportRevisions": [
+      {
+        "id": "ff3839f4-8a5e-4dab-ade9-72417cecc4d3",
+        "number": 3,
+        "status": "DRAFT"
+      },
+      {
+        "id": "b25bfdae-0672-4ccd-9cd8-5352315825d5",
+        "number": 2,
+        "status": "APPROVED"
+      },
+      {
+        "id": "49599790-ab23-43db-8f8a-5f6a2269b37a",
+        "number": 1,
+        "status": "REJECTED"
+      }
+    ],
+    "display": {
+      "stagesKg": {
+        "RS": "1617.00",
+        "TR": "25.80",
+        "CS": "577.70",
+        "US": "1155.40",
+        "TD": "460.00"
+      },
+      "stagesBelowDisplayPrecision": {
+        "RS": false,
+        "TR": false,
+        "CS": false,
+        "US": false,
+        "TD": false
+      },
+      "totalEmissionsKg": "3835.90",
+      "totalBelowDisplayPrecision": false,
+      "gridEnergyKwh": "100000.00",
+      "energyBelowDisplayPrecision": false,
+      "footprintKgPerKwh": "0.040378",
+      "belowDisplayPrecision": false
+    },
+    "evidence": [
+      {
+        "id": "c1a6ae09-ff87-4f1e-8ced-0005e5d16f09",
+        "name": "DEMO-流程占位附件.png",
+        "size": 68,
+        "contentHash": "a0aba5acea68899495ed59d23aae2942ff229bfaed1d0595acbbd0e2c72f151e"
+      }
+    ],
+    "pdfFileHash": "3d23f30ec98a5ee398d093312ed545287ed09adc730d2f0beba6d45f2c5d1231"
+  },
+  "backup": {
+    "path": "/private/tmp/carbon-pv-cleanup-20261009-He15i1/before-cleanup.dump",
+    "format": "postgres-custom",
+    "createdAt": "2026-10-09T06:31:51.086Z",
+    "bytes": 521565,
+    "sha256": "65916ed7919e8e9c2eddd75fac24ccd92a71ce534974027846928dd2a20a2f99",
+    "archiveListVerified": true,
+    "directoryMode": "0700",
+    "fileMode": "0600",
+    "sha256Rechecked": true
+  },
+  "cleanupAuditId": "6f2ec92e-6786-4b26-ad41-29e61f205206",
+  "preservation": {
+    "tables": [
+      "School",
+      "User",
+      "SchoolMembership",
+      "PlatformRole",
+      "Account",
+      "Verification",
+      "FootprintModel",
+      "ModelVersion",
+      "PublicDataVersion",
+      "AccountingCase",
+      "AccountingRevision",
+      "CalculationRun",
+      "AccountingReview",
+      "FileAsset",
+      "FootprintReport",
+      "ReportRevision",
+      "ReportExport"
+    ],
+    "allRetainedRowsUnchangedAtCleanup": true,
+    "domainRowsAndCredentialsUnchangedAfterDemoVerification": true,
+    "evidenceAndPdfBytesUnchanged": true
+  },
+  "verification": {
+    "pv": {
+      "status": "PASSED",
+      "execution": "REUSED_HISTORY",
+      "independentComparisons": 27,
+      "checks": [
+        "案例录入及附件关联",
+        "27 项独立数值预期",
+        "幂等运行",
+        "输入变更后须重算",
+        "提交及禁止自审",
+        "独立复核驳回",
+        "修订后审核通过",
+        "历史运行及快照保留",
+        "跨校案例与附件隔离",
+        "同校证据下载"
+      ]
+    },
+    "report": {
+      "status": "PASSED",
+      "execution": "REUSED_HISTORY",
+      "pdfFileHash": "3d23f30ec98a5ee398d093312ed545287ed09adc730d2f0beba6d45f2c5d1231",
+      "checks": [
+        "已审核 DEMO 运行绑定",
+        "正文编辑提交",
+        "禁止自审",
+        "独立复核驳回",
+        "新修订通过",
+        "旧版冻结",
+        "修订 v3 草稿体验",
+        "PDF 重复导出同一文件",
+        "跨校报告及PDF下载拒绝",
+        "来源数值与核算一致"
+      ]
+    },
+    "service": {
+      "checkedAt": "2026-10-09T06:35:39.180Z",
+      "status": "PASSED",
+      "origin": "http://localhost:3000",
+      "checks": [
+        "开发服务健康和数据库就绪均为 200",
+        "writer 原演示账号登录、列表、详情、附件与 PDF 数值摘要和页面访问通过",
+        "reviewer 原演示账号登录、列表、详情、附件与 PDF 审核角色导出权限限制及页面访问通过",
+        "outsider 原演示账号登录、列表、详情、附件与 PDF 跨校隔离通过"
+      ],
+      "verificationSessionsSignedOut": true,
+      "pdfHash": "3d23f30ec98a5ee398d093312ed545287ed09adc730d2f0beba6d45f2c5d1231"
+    }
+  },
+  "note": "Only the local database was cleaned. Demo records remain synthetic; existing project source, fixtures, acceptance evidence and delivery documents were retained. No passwords, tokens or database connection strings are included."
+}

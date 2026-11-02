@@ -25,6 +25,8 @@ export async function GET(request: Request) {
         source: true,
         content: true,
         publishedAt: true,
+        retiredAt: true,
+        retirementReason: true,
       },
       orderBy: { publishedAt: "desc" },
     });

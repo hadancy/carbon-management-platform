@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-10-08T03:35:45.810Z",
+  "scope": "T07_SYNTHETIC_WORKFLOW",
+  "status": "PASSED",
+  "reportId": "fc5d216c-58ed-4a9b-aec7-cedc8198ea77",
+  "calculationRunId": "f2cec2a1-183d-4806-be09-7ccb4a6d7698",
+  "approvedRevisionId": "731746c0-e40f-4786-9deb-8749e454dcaf",
+  "thirdRevisionId": "bd0cbefc-573f-4f71-9644-d6e416adf9b7",
+  "pdfFileHash": "303fb40a0b378ea59f82edfbae0f6d63954cf940b63f53ef08fb3723186ebd92",
+  "pageCount": 7,
+  "annualEnergyTablePages": 2,
+  "browserErrors": [],
+  "checks": [
+    "来源仅接受已审核正式运行",
+    "角色矩阵及禁止自审",
+    "草稿与提交校验分离",
+    "拒绝数值改写",
+    "乐观锁及旧目标拦截",
+    "驳回与新修订",
+    "已审核版冻结",
+    "页面与PDF数值一致",
+    "中文长文分页及跨页表头",
+    "并发导出只有一个文件",
+    "旧PDF字节不变",
+    "篡改摘要拦截",
+    "跨校详情预览下载隔离",
+    "浏览器编辑审核修订预览导出",
+    "浏览器列表创建与搜索",
+    "无控制台警告"
+  ]
+}

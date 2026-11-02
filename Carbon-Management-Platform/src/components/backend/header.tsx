@@ -17,6 +17,7 @@ import {
 } from "antd";
 import type { MenuProps } from "antd";
 import type { BackendNavigationItem } from "../backend-shell";
+import { requestNavigation } from "./navigation-guard";
 
 type Props = {
   active: BackendNavigationItem | undefined;
@@ -55,7 +56,7 @@ export function BackendHeader({
 
   return (
     <Layout.Header className="z-1 flex h-12.5 items-center justify-between gap-3 bg-white pr-4.5 pl-2 leading-normal shadow-[0_1px_4px_rgb(0_21_41/8%)] max-sm:pr-2 [&_.ant-breadcrumb]:overflow-hidden [&_.ant-breadcrumb]:text-ellipsis [&_.ant-breadcrumb]:whitespace-nowrap">
-      <Flex align="center" gap={14} className="min-w-0">
+      <Flex align="center" gap={14} className="min-w-0 flex-1">
         <Button
           type="text"
           className="h-12 w-10.5 rounded-none text-lg text-[#5a5e66] max-[900px]:hidden"
@@ -71,6 +72,7 @@ export function BackendHeader({
           onClick={() => setDrawerOpen(true)}
         />
         <Breadcrumb
+          className="min-w-0 max-sm:hidden"
           items={[
             { title: <Link href={brandHref}>首页</Link> },
             { title: sectionLabel },
@@ -78,7 +80,7 @@ export function BackendHeader({
           ]}
         />
       </Flex>
-      <Flex align="center" gap={12} className="min-w-0">
+      <Flex align="center" gap={12} className="shrink-0 max-sm:gap-1">
         {headerExtras}
         <Dropdown
           trigger={["click"]}
@@ -86,16 +88,19 @@ export function BackendHeader({
             items: accountItems,
             onClick: ({ key }) => {
               if (key === "account") {
-                remember(accountHref);
-                router.push(accountHref);
+                requestNavigation(() => {
+                  remember(accountHref);
+                  router.push(accountHref);
+                });
               } else if (key === "logout") {
-                void onSignOut();
+                requestNavigation(() => void onSignOut());
               }
             },
           }}
         >
           <Button
             type="text"
+            aria-label="账号菜单"
             className="flex h-11.5 items-center gap-2 px-1.5 text-[#5a5e66]"
           >
             <Avatar

@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-07",
+  "scope": "ISOLATED_SYNTHETIC_FULL_FLOW_AUDIT",
+  "overall": "MAIN_FLOW_PASSED_WITH_FINDINGS",
+  "checks": {
+    "unitTests": {
+      "passed": 31,
+      "failed": 0
+    },
+    "typecheck": "PASSED",
+    "lint": "PASSED",
+    "formatBeforeAudit": "PASSED",
+    "prismaValidate": "PASSED",
+    "webpackBuild": "PASSED",
+    "defaultTurbopackBuild": "ENVIRONMENT_BLOCKED_PORT_BINDING",
+    "stage3To7IsolatedIntegration": "PASSED",
+    "manualUI": "school -> model publish -> inputs -> trial -> formal -> review -> report edit -> report review -> preview -> PDF",
+    "independentArithmetic": "PASSED"
+  },
+  "expected": {
+    "stagesKg": {
+      "RS": "1690.5",
+      "TR": "25.8",
+      "CS": "577.7",
+      "US": "1155.4",
+      "TD": "460"
+    },
+    "totalEmissionsKg": "3909.4",
+    "gridEnergyKwh": "100000",
+    "deliveredEnergyKwh": "95000",
+    "displayFootprintKgPerKwh": "0.041152"
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "priority": "P1",
+      "kind": "DEFECT",
+      "description": "RULE_CONFIG with missing schema fields can be published; accounting choices then silently filter it out."
+    },
+    {
+      "id": "F02",
+      "priority": "P2",
+      "kind": "ERROR_RECOVERY",
+      "description": "Activity unit is free text; an unsupported Chinese unit is accepted on draft save and later diagnosed with an internal lines.0.value path."
+    },
+    {
+      "id": "F03",
+      "priority": "P2",
+      "kind": "DEFECT",
+      "description": "Invalid or cross-school accounting detail pages return HTTP 500 rather than 404; APIs correctly reject access."
+    },
+    {
+      "id": "F04",
+      "priority": "P2",
+      "kind": "EFFICIENCY",
+      "description": "25 operating years produce 305 input controls and a 13664px page without batch import or persistent save controls."
+    },
+    {
+      "id": "F05",
+      "priority": "P2",
+      "kind": "TRACEABILITY_UX",
+      "description": "Line results show UUID and normalized quantity without item name or unit; snapshot link opens raw JSON."
+    },
+    {
+      "id": "F06",
+      "priority": "P2",
+      "kind": "EFFICIENCY",
+      "description": "Accounting list lacks search/status filters and exposes raw English status values."
+    },
+    {
+      "id": "F07",
+      "priority": "P2",
+      "kind": "PLANNED_CAPABILITY",
+      "description": "Public report template versions are not connected to report generation; built-in versioned template is used."
+    },
+    {
+      "id": "F08",
+      "priority": "P3",
+      "kind": "RESPONSIVE",
+      "description": "390px accounting viewport has 414px body width and horizontal page overflow."
+    },
+    {
+      "id": "F09",
+      "priority": "P3",
+      "kind": "TYPOGRAPHY",
+      "description": "Long cover title leaves a single final Chinese character on its own line."
+    }
+  ],
+  "limits": [
+    "Synthetic acceptance does not replace formal business signoff B01-B06.",
+    "Performance/load, backup restore and production deployment were not executed.",
+    "No full WCAG/keyboard/screen-reader audit.",
+    "Only current PV GRID_ONLY scope; Word and other generation technologies are later scopes."
+  ],
+  "cleanup": {
+    "temporaryServerStopped": true,
+    "temporaryDatabaseDropped": true,
+    "integrationCleanupExitCode": 0,
+    "browserViewportReset": true,
+    "agentTabClosed": true,
+    "originalDevelopmentDataUntouched": true
+  },
+  "pdf": {
+    "file": "output/pdf/AUDIT_UI_REPORT_002-v1.pdf",
+    "pages": 5,
+    "sha256": "c6719acb8e7a6b210f9da94a25d517ef35310d04de897b468a7334f3c1e4ce04",
+    "visuallyInspectedAllPages": true,
+    "oldPdfUnchangedAfterCaseRevision": true
+  },
+  "codeChanges": false,
+  "projectArchitectureSynchronized": true
+}

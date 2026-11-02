@@ -1,0 +1,30 @@
+{
+  "status": "PASSED",
+  "checkedAt": "2026-10-08T07:17:45.179Z",
+  "artifacts": "/Users/hadancy/workspace/project/碳管理平台/Carbon-Management-Platform/docs/acceptance/flow-fixes-20261008",
+  "titleLineLengths": [
+    17,
+    18
+  ],
+  "mobile": {
+    "viewport": 390,
+    "body": 390,
+    "document": 390,
+    "height": 1614
+  },
+  "pdfSha256": "c71c96fe79033a73b84e0918e40945c4b054eb73c345a9da025a559ef837ebf3",
+  "browserErrors": [],
+  "checks": [
+    "不完整规则与非法模板保留草稿",
+    "模板选择、默认文案、版本与快照冻结",
+    "模板篡改摘要拦截",
+    "无效 ID 与跨校页面返回 404",
+    "25 年紧凑表格、批量补齐及保存",
+    "390 像素页面无横向溢出",
+    "审核角色待办与搜索",
+    "长标题无孤字行",
+    "旧草稿非法单位在计算前定位字段并切换活动页签",
+    "历史结果数据项名称与固定来源面板",
+    "保存后保留年度电量页签"
+  ]
+}

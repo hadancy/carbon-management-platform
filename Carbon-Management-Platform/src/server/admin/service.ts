@@ -13,4 +13,5 @@ export {
   createPublicDataDraft,
   updatePublicDataDraft,
   publishPublicData,
+  retireEmissionFactor,
 } from "./public-data";

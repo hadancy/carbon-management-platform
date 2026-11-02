@@ -1,6 +1,7 @@
 import type { useRouter } from "next/navigation";
 import { Tabs } from "antd";
 import type { BackendNavigationItem } from "../backend-shell";
+import { requestNavigation } from "./navigation-guard";
 
 type Props = {
   activeKey: string;
@@ -29,7 +30,7 @@ export function BackendRouteTabs({
         label: routes.find((item) => item.href === key)?.label ?? "当前页面",
         closable: tabKeys.length > 1,
       }))}
-      onChange={(key) => router.push(key)}
+      onChange={(key) => requestNavigation(() => router.push(key))}
       onEdit={(targetKey, action) => {
         if (action === "remove" && typeof targetKey === "string") {
           closeTab(targetKey);

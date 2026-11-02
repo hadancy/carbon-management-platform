@@ -5,15 +5,24 @@ import {
   BankOutlined,
   DatabaseOutlined,
   FileSearchOutlined,
+  AppstoreOutlined,
   SwapOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 import { Button } from "antd";
 import { authClient } from "@/lib/auth-client";
 import { BackendShell } from "@/components/backend-shell";
+import { requestNavigation } from "@/components/backend/navigation-guard";
 
 const navigation = [
   { href: "/admin/schools", label: "学校与账号", icon: <BankOutlined /> },
   { href: "/admin/public-data", label: "公共数据", icon: <DatabaseOutlined /> },
+  {
+    href: "/admin/data-items",
+    label: "数据项库",
+    icon: <UnorderedListOutlined />,
+  },
+  { href: "/admin/models", label: "公用模型模板", icon: <AppstoreOutlined /> },
   { href: "/admin/audit", label: "审计日志", icon: <FileSearchOutlined /> },
 ];
 
@@ -48,7 +57,7 @@ export function AdminShell({
           <Button
             type="text"
             icon={<SwapOutlined />}
-            onClick={() => router.push("/models")}
+            onClick={() => requestNavigation(() => router.push("/models"))}
           >
             学校工作台
           </Button>

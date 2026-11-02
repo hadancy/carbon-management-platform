@@ -1,3 +1,4 @@
+import { databasePoolConfig } from "./pool-config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
@@ -9,7 +10,9 @@ function createClient() {
     throw new Error("DATABASE_URL is required for database access");
   }
 
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  return new PrismaClient({
+    adapter: new PrismaPg({ connectionString, ...databasePoolConfig() }),
+  });
 }
 
 export const db = globalForPrisma.prisma ?? createClient();

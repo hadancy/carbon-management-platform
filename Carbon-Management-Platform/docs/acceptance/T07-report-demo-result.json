@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-08T02:59:45.685Z",
+  "scope": "T07_DEMO_REPORT",
+  "status": "PASSED",
+  "execution": "CREATED_AND_VERIFIED",
+  "reportId": "0b5a15fd-323f-4a42-972a-bb77103d8b5b",
+  "reportCode": "DEMO_REPORT_T07",
+  "reportPath": "/reports/0b5a15fd-323f-4a42-972a-bb77103d8b5b",
+  "schoolId": "dda9ed1f-cf46-4a39-9268-4e26741e922c",
+  "calculationRunId": "0155a63d-70cb-4e95-9b3d-088b5b5755dd",
+  "caseCode": "DEMO_PV_001",
+  "revisions": [
+    {
+      "id": "ff3839f4-8a5e-4dab-ade9-72417cecc4d3",
+      "number": 3,
+      "status": "DRAFT",
+      "contentHash": null
+    },
+    {
+      "id": "b25bfdae-0672-4ccd-9cd8-5352315825d5",
+      "number": 2,
+      "status": "APPROVED",
+      "contentHash": "84bf651126ffa484767a55182e1fc4f06509a616ee349be528ecb48a5eac3009"
+    },
+    {
+      "id": "49599790-ab23-43db-8f8a-5f6a2269b37a",
+      "number": 1,
+      "status": "REJECTED",
+      "contentHash": "2b4cb775592188e4a22d673d0fd88611d553a8d6c9bda98cd2bc2b3adafc27ee"
+    }
+  ],
+  "display": {
+    "stagesKg": {
+      "RS": "1617.00",
+      "TR": "25.80",
+      "CS": "577.70",
+      "US": "1155.40",
+      "TD": "460.00"
+    },
+    "stagesBelowDisplayPrecision": {
+      "RS": false,
+      "TR": false,
+      "CS": false,
+      "US": false,
+      "TD": false
+    },
+    "totalEmissionsKg": "3835.90",
+    "totalBelowDisplayPrecision": false,
+    "gridEnergyKwh": "100000.00",
+    "energyBelowDisplayPrecision": false,
+    "footprintKgPerKwh": "0.040378",
+    "belowDisplayPrecision": false
+  },
+  "pdfRevision": 2,
+  "pdfFileHash": "3d23f30ec98a5ee398d093312ed545287ed09adc730d2f0beba6d45f2c5d1231",
+  "checks": [
+    "已审核 DEMO 运行绑定",
+    "正文编辑提交",
+    "禁止自审",
+    "独立复核驳回",
+    "新修订通过",
+    "旧版冻结",
+    "修订 v3 草稿体验",
+    "PDF 重复导出同一文件",
+    "跨校报告及PDF下载拒绝",
+    "来源数值与核算一致"
+  ],
+  "pdfVisualReview": {
+    "pages": 7,
+    "pageSize": "A4",
+    "allPagesInspected": true,
+    "chineseGlyphs": "PASSED",
+    "headersFootersPageNumbers": "PASSED",
+    "repeatedTableHeaders": "PASSED",
+    "clippingOrOverlap": false,
+    "totalEmissionsKg": "3835.90",
+    "footprintKgPerKwh": "0.040378",
+    "deliveredEnergyKwh": "95000",
+    "templateVersion": "pv-report-1.0.1"
+  }
+}

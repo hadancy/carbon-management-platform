@@ -1,0 +1,754 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-08T02:25:08.742Z",
+  "acceptanceScope": "DEMO_WORKFLOW",
+  "status": "PASSED",
+  "execution": "CREATED_AND_VERIFIED",
+  "caseId": "4b427cf5-da65-432e-ac53-2ead7b898cc4",
+  "caseCode": "DEMO_PV_001",
+  "schoolId": "dda9ed1f-cf46-4a39-9268-4e26741e922c",
+  "schoolName": "光伏流程演示学校 A",
+  "casePath": "/accounting/4b427cf5-da65-432e-ac53-2ead7b898cc4",
+  "currentRevision": {
+    "number": 3,
+    "status": "DRAFT"
+  },
+  "accounts": {
+    "writer": "pv-writer@demo.invalid",
+    "reviewer": "pv-reviewer@demo.invalid",
+    "outsider": "pv-outsider@demo.invalid"
+  },
+  "checks": [
+    "案例录入及附件关联",
+    "27 项独立数值预期",
+    "幂等运行",
+    "输入变更后须重算",
+    "提交及禁止自审",
+    "独立复核驳回",
+    "修订后审核通过",
+    "历史运行及快照保留",
+    "跨校案例与附件隔离",
+    "同校证据下载"
+  ],
+  "comparisons": [
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000021.normalizedActivity",
+      "expected": "2",
+      "actual": "2",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000021.emissionsKg",
+      "expected": "1470",
+      "actual": "1470",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000022.normalizedActivity",
+      "expected": "200",
+      "actual": "200",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000022.emissionsKg",
+      "expected": "25.800",
+      "actual": "25.8",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000023.normalizedActivity",
+      "expected": "1000",
+      "actual": "1000",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000023.emissionsKg",
+      "expected": "577.7000",
+      "actual": "577.7",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000024.normalizedActivity",
+      "expected": "2000",
+      "actual": "2000",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000024.emissionsKg",
+      "expected": "1155.4000",
+      "actual": "1155.4",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000025.normalizedActivity",
+      "expected": "100000",
+      "actual": "100000",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "lines.00000000-0000-4000-8000-000000000025.emissionsKg",
+      "expected": "460.0000",
+      "actual": "460",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "stagesKg.RS",
+      "expected": "1470",
+      "actual": "1470",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "display.stagesKg.RS",
+      "expected": "1470.00",
+      "actual": "1470.00",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "stagesKg.TR",
+      "expected": "25.800",
+      "actual": "25.8",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "display.stagesKg.TR",
+      "expected": "25.80",
+      "actual": "25.80",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "stagesKg.CS",
+      "expected": "577.7000",
+      "actual": "577.7",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "display.stagesKg.CS",
+      "expected": "577.70",
+      "actual": "577.70",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "stagesKg.US",
+      "expected": "1155.4000",
+      "actual": "1155.4",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "display.stagesKg.US",
+      "expected": "1155.40",
+      "actual": "1155.40",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "stagesKg.TD",
+      "expected": "460.0000",
+      "actual": "460",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "display.stagesKg.TD",
+      "expected": "460.00",
+      "actual": "460.00",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "totalEmissionsKg",
+      "expected": "3688.9000",
+      "actual": "3688.9",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "gridEnergyKwh",
+      "expected": "100000",
+      "actual": "100000",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "deliveredEnergyKwh",
+      "expected": "95000",
+      "actual": "95000",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "footprintKgPerKwh",
+      "expected": "0.038830526315789473684210526315789473684210526315789473684210526315789473684210526",
+      "actual": "0.038830526315789473684210526315789473684210526315789",
+      "difference": "0.000000000000000000000000000000000000000000000000000473684210526315789473684210526",
+      "passed": true
+    },
+    {
+      "path": "display.totalEmissionsKg",
+      "expected": "3688.90",
+      "actual": "3688.90",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "display.gridEnergyKwh",
+      "expected": "100000.00",
+      "actual": "100000.00",
+      "difference": "0",
+      "passed": true
+    },
+    {
+      "path": "display.footprintKgPerKwh",
+      "expected": "0.038831",
+      "actual": "0.038831",
+      "difference": "0",
+      "passed": true
+    }
+  ],
+  "revisions": [
+    {
+      "number": 3,
+      "status": "DRAFT",
+      "inputRevision": 1,
+      "reviews": [],
+      "runs": [
+        {
+          "id": "19a2aebe-a423-4d80-bb2c-6731b51dcbfa",
+          "mode": "PRODUCTION",
+          "inputHash": "d177a7a795120be9b17ccfc2179df1b1467098c7bbdd3ced2164d42f1d5568f8",
+          "result": {
+            "mode": "PRODUCTION",
+            "lines": [
+              {
+                "stage": "RS",
+                "itemId": "00000000-0000-4000-8000-000000000021",
+                "conversions": [
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "t",
+                    "originalUnit": "kg",
+                    "originalValue": "2200",
+                    "convertedValue": "2.2"
+                  }
+                ],
+                "emissionsKg": "1617",
+                "factorVersionId": "4d96a720-f0af-40a4-8b2f-b583d2aabe9c",
+                "normalizedActivity": "2.2"
+              },
+              {
+                "stage": "TR",
+                "itemId": "00000000-0000-4000-8000-000000000022",
+                "conversions": [
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "t",
+                    "originalUnit": "kg",
+                    "originalValue": "2000",
+                    "convertedValue": "2"
+                  },
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "km",
+                    "originalUnit": "m",
+                    "originalValue": "100000",
+                    "convertedValue": "100"
+                  }
+                ],
+                "emissionsKg": "25.8",
+                "factorVersionId": "a3183850-ce3c-42c2-b4e9-2eeea8c02c10",
+                "normalizedActivity": "200"
+              },
+              {
+                "stage": "CS",
+                "itemId": "00000000-0000-4000-8000-000000000023",
+                "conversions": [
+                  {
+                    "multiplier": "1",
+                    "targetUnit": "kWh",
+                    "originalUnit": "kWh",
+                    "originalValue": "1000",
+                    "convertedValue": "1000"
+                  }
+                ],
+                "emissionsKg": "577.7",
+                "factorVersionId": "45522364-3d5d-4dc7-94fa-77d104537d63",
+                "normalizedActivity": "1000"
+              },
+              {
+                "stage": "US",
+                "itemId": "00000000-0000-4000-8000-000000000024",
+                "conversions": [
+                  {
+                    "multiplier": "1",
+                    "targetUnit": "kWh",
+                    "originalUnit": "kWh",
+                    "originalValue": "2000",
+                    "convertedValue": "2000"
+                  }
+                ],
+                "emissionsKg": "1155.4",
+                "factorVersionId": "7a79a16d-cbb9-4a19-acf6-b4784398c807",
+                "normalizedActivity": "2000"
+              },
+              {
+                "stage": "TD",
+                "itemId": "00000000-0000-4000-8000-000000000025",
+                "conversions": [],
+                "emissionsKg": "460",
+                "factorVersionId": "cb739dc3-d3b6-4c47-98c3-207f8f093363",
+                "normalizedActivity": "100000"
+              }
+            ],
+            "display": {
+              "stagesKg": {
+                "CS": "577.70",
+                "RS": "1617.00",
+                "TD": "460.00",
+                "TR": "25.80",
+                "US": "1155.40"
+              },
+              "gridEnergyKwh": "100000.00",
+              "totalEmissionsKg": "3835.90",
+              "footprintKgPerKwh": "0.040378",
+              "belowDisplayPrecision": false,
+              "totalBelowDisplayPrecision": false,
+              "energyBelowDisplayPrecision": false,
+              "stagesBelowDisplayPrecision": {
+                "CS": false,
+                "RS": false,
+                "TD": false,
+                "TR": false,
+                "US": false
+              }
+            },
+            "stagesKg": {
+              "CS": "577.7",
+              "RS": "1617",
+              "TD": "460",
+              "TR": "25.8",
+              "US": "1155.4"
+            },
+            "engineVersion": "pv-grid-1.0.0",
+            "gridEnergyKwh": "100000",
+            "totalEmissionsKg": "3835.9",
+            "footprintKgPerKwh": "0.040377894736842105263157894736842105263157894736842",
+            "deliveredEnergyKwh": "95000"
+          }
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "status": "APPROVED",
+      "inputRevision": 2,
+      "reviews": [
+        {
+          "decision": "APPROVE",
+          "reason": "DEMO：修订后的构造数据通过流程复核"
+        }
+      ],
+      "runs": [
+        {
+          "id": "0155a63d-70cb-4e95-9b3d-088b5b5755dd",
+          "mode": "PRODUCTION",
+          "inputHash": "8e21e9f9daa47a47fa2dd2041a08c62708dfe1ce3152d7e0655dd0966d2fbd24",
+          "result": {
+            "mode": "PRODUCTION",
+            "lines": [
+              {
+                "stage": "RS",
+                "itemId": "00000000-0000-4000-8000-000000000021",
+                "conversions": [
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "t",
+                    "originalUnit": "kg",
+                    "originalValue": "2200",
+                    "convertedValue": "2.2"
+                  }
+                ],
+                "emissionsKg": "1617",
+                "factorVersionId": "4d96a720-f0af-40a4-8b2f-b583d2aabe9c",
+                "normalizedActivity": "2.2"
+              },
+              {
+                "stage": "TR",
+                "itemId": "00000000-0000-4000-8000-000000000022",
+                "conversions": [
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "t",
+                    "originalUnit": "kg",
+                    "originalValue": "2000",
+                    "convertedValue": "2"
+                  },
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "km",
+                    "originalUnit": "m",
+                    "originalValue": "100000",
+                    "convertedValue": "100"
+                  }
+                ],
+                "emissionsKg": "25.8",
+                "factorVersionId": "a3183850-ce3c-42c2-b4e9-2eeea8c02c10",
+                "normalizedActivity": "200"
+              },
+              {
+                "stage": "CS",
+                "itemId": "00000000-0000-4000-8000-000000000023",
+                "conversions": [
+                  {
+                    "multiplier": "1",
+                    "targetUnit": "kWh",
+                    "originalUnit": "kWh",
+                    "originalValue": "1000",
+                    "convertedValue": "1000"
+                  }
+                ],
+                "emissionsKg": "577.7",
+                "factorVersionId": "45522364-3d5d-4dc7-94fa-77d104537d63",
+                "normalizedActivity": "1000"
+              },
+              {
+                "stage": "US",
+                "itemId": "00000000-0000-4000-8000-000000000024",
+                "conversions": [
+                  {
+                    "multiplier": "1",
+                    "targetUnit": "kWh",
+                    "originalUnit": "kWh",
+                    "originalValue": "2000",
+                    "convertedValue": "2000"
+                  }
+                ],
+                "emissionsKg": "1155.4",
+                "factorVersionId": "7a79a16d-cbb9-4a19-acf6-b4784398c807",
+                "normalizedActivity": "2000"
+              },
+              {
+                "stage": "TD",
+                "itemId": "00000000-0000-4000-8000-000000000025",
+                "conversions": [],
+                "emissionsKg": "460",
+                "factorVersionId": "cb739dc3-d3b6-4c47-98c3-207f8f093363",
+                "normalizedActivity": "100000"
+              }
+            ],
+            "display": {
+              "stagesKg": {
+                "CS": "577.70",
+                "RS": "1617.00",
+                "TD": "460.00",
+                "TR": "25.80",
+                "US": "1155.40"
+              },
+              "gridEnergyKwh": "100000.00",
+              "totalEmissionsKg": "3835.90",
+              "footprintKgPerKwh": "0.040378",
+              "belowDisplayPrecision": false,
+              "totalBelowDisplayPrecision": false,
+              "energyBelowDisplayPrecision": false,
+              "stagesBelowDisplayPrecision": {
+                "CS": false,
+                "RS": false,
+                "TD": false,
+                "TR": false,
+                "US": false
+              }
+            },
+            "stagesKg": {
+              "CS": "577.7",
+              "RS": "1617",
+              "TD": "460",
+              "TR": "25.8",
+              "US": "1155.4"
+            },
+            "engineVersion": "pv-grid-1.0.0",
+            "gridEnergyKwh": "100000",
+            "totalEmissionsKg": "3835.9",
+            "footprintKgPerKwh": "0.040377894736842105263157894736842105263157894736842",
+            "deliveredEnergyKwh": "95000"
+          }
+        }
+      ]
+    },
+    {
+      "number": 1,
+      "status": "REJECTED",
+      "inputRevision": 3,
+      "reviews": [
+        {
+          "decision": "REJECT",
+          "reason": "DEMO：验证驳回及修订，水泥活动量改为 2200 kg"
+        }
+      ],
+      "runs": [
+        {
+          "id": "fc480177-ad7f-4d50-9ef5-05cf35fab5fe",
+          "mode": "PRODUCTION",
+          "inputHash": "84335333623714e6345cf1e68fd07ef8e2c82664bddbb34fa8facf0aa91be1b2",
+          "result": {
+            "mode": "PRODUCTION",
+            "lines": [
+              {
+                "stage": "RS",
+                "itemId": "00000000-0000-4000-8000-000000000021",
+                "conversions": [
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "t",
+                    "originalUnit": "kg",
+                    "originalValue": "2100",
+                    "convertedValue": "2.1"
+                  }
+                ],
+                "emissionsKg": "1543.5",
+                "factorVersionId": "4d96a720-f0af-40a4-8b2f-b583d2aabe9c",
+                "normalizedActivity": "2.1"
+              },
+              {
+                "stage": "TR",
+                "itemId": "00000000-0000-4000-8000-000000000022",
+                "conversions": [
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "t",
+                    "originalUnit": "kg",
+                    "originalValue": "2000",
+                    "convertedValue": "2"
+                  },
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "km",
+                    "originalUnit": "m",
+                    "originalValue": "100000",
+                    "convertedValue": "100"
+                  }
+                ],
+                "emissionsKg": "25.8",
+                "factorVersionId": "a3183850-ce3c-42c2-b4e9-2eeea8c02c10",
+                "normalizedActivity": "200"
+              },
+              {
+                "stage": "CS",
+                "itemId": "00000000-0000-4000-8000-000000000023",
+                "conversions": [
+                  {
+                    "multiplier": "1",
+                    "targetUnit": "kWh",
+                    "originalUnit": "kWh",
+                    "originalValue": "1000",
+                    "convertedValue": "1000"
+                  }
+                ],
+                "emissionsKg": "577.7",
+                "factorVersionId": "45522364-3d5d-4dc7-94fa-77d104537d63",
+                "normalizedActivity": "1000"
+              },
+              {
+                "stage": "US",
+                "itemId": "00000000-0000-4000-8000-000000000024",
+                "conversions": [
+                  {
+                    "multiplier": "1",
+                    "targetUnit": "kWh",
+                    "originalUnit": "kWh",
+                    "originalValue": "2000",
+                    "convertedValue": "2000"
+                  }
+                ],
+                "emissionsKg": "1155.4",
+                "factorVersionId": "7a79a16d-cbb9-4a19-acf6-b4784398c807",
+                "normalizedActivity": "2000"
+              },
+              {
+                "stage": "TD",
+                "itemId": "00000000-0000-4000-8000-000000000025",
+                "conversions": [],
+                "emissionsKg": "460",
+                "factorVersionId": "cb739dc3-d3b6-4c47-98c3-207f8f093363",
+                "normalizedActivity": "100000"
+              }
+            ],
+            "display": {
+              "stagesKg": {
+                "CS": "577.70",
+                "RS": "1543.50",
+                "TD": "460.00",
+                "TR": "25.80",
+                "US": "1155.40"
+              },
+              "gridEnergyKwh": "100000.00",
+              "totalEmissionsKg": "3762.40",
+              "footprintKgPerKwh": "0.039604",
+              "belowDisplayPrecision": false,
+              "totalBelowDisplayPrecision": false,
+              "energyBelowDisplayPrecision": false,
+              "stagesBelowDisplayPrecision": {
+                "CS": false,
+                "RS": false,
+                "TD": false,
+                "TR": false,
+                "US": false
+              }
+            },
+            "stagesKg": {
+              "CS": "577.7",
+              "RS": "1543.5",
+              "TD": "460",
+              "TR": "25.8",
+              "US": "1155.4"
+            },
+            "engineVersion": "pv-grid-1.0.0",
+            "gridEnergyKwh": "100000",
+            "totalEmissionsKg": "3762.4",
+            "footprintKgPerKwh": "0.039604210526315789473684210526315789473684210526316",
+            "deliveredEnergyKwh": "95000"
+          }
+        },
+        {
+          "id": "52273c24-9164-4fc2-b597-388692b2718a",
+          "mode": "PRODUCTION",
+          "inputHash": "cad68a253a68317d0e0b129fbd40bde3194dc0d264f77c224a81cdb46762fda0",
+          "result": {
+            "mode": "PRODUCTION",
+            "lines": [
+              {
+                "stage": "RS",
+                "itemId": "00000000-0000-4000-8000-000000000021",
+                "conversions": [
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "t",
+                    "originalUnit": "kg",
+                    "originalValue": "2000",
+                    "convertedValue": "2"
+                  }
+                ],
+                "emissionsKg": "1470",
+                "factorVersionId": "4d96a720-f0af-40a4-8b2f-b583d2aabe9c",
+                "normalizedActivity": "2"
+              },
+              {
+                "stage": "TR",
+                "itemId": "00000000-0000-4000-8000-000000000022",
+                "conversions": [
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "t",
+                    "originalUnit": "kg",
+                    "originalValue": "2000",
+                    "convertedValue": "2"
+                  },
+                  {
+                    "multiplier": "0.001",
+                    "targetUnit": "km",
+                    "originalUnit": "m",
+                    "originalValue": "100000",
+                    "convertedValue": "100"
+                  }
+                ],
+                "emissionsKg": "25.8",
+                "factorVersionId": "a3183850-ce3c-42c2-b4e9-2eeea8c02c10",
+                "normalizedActivity": "200"
+              },
+              {
+                "stage": "CS",
+                "itemId": "00000000-0000-4000-8000-000000000023",
+                "conversions": [
+                  {
+                    "multiplier": "1",
+                    "targetUnit": "kWh",
+                    "originalUnit": "kWh",
+                    "originalValue": "1000",
+                    "convertedValue": "1000"
+                  }
+                ],
+                "emissionsKg": "577.7",
+                "factorVersionId": "45522364-3d5d-4dc7-94fa-77d104537d63",
+                "normalizedActivity": "1000"
+              },
+              {
+                "stage": "US",
+                "itemId": "00000000-0000-4000-8000-000000000024",
+                "conversions": [
+                  {
+                    "multiplier": "1",
+                    "targetUnit": "kWh",
+                    "originalUnit": "kWh",
+                    "originalValue": "2000",
+                    "convertedValue": "2000"
+                  }
+                ],
+                "emissionsKg": "1155.4",
+                "factorVersionId": "7a79a16d-cbb9-4a19-acf6-b4784398c807",
+                "normalizedActivity": "2000"
+              },
+              {
+                "stage": "TD",
+                "itemId": "00000000-0000-4000-8000-000000000025",
+                "conversions": [],
+                "emissionsKg": "460",
+                "factorVersionId": "cb739dc3-d3b6-4c47-98c3-207f8f093363",
+                "normalizedActivity": "100000"
+              }
+            ],
+            "display": {
+              "stagesKg": {
+                "CS": "577.70",
+                "RS": "1470.00",
+                "TD": "460.00",
+                "TR": "25.80",
+                "US": "1155.40"
+              },
+              "gridEnergyKwh": "100000.00",
+              "totalEmissionsKg": "3688.90",
+              "footprintKgPerKwh": "0.038831",
+              "belowDisplayPrecision": false,
+              "totalBelowDisplayPrecision": false,
+              "energyBelowDisplayPrecision": false,
+              "stagesBelowDisplayPrecision": {
+                "CS": false,
+                "RS": false,
+                "TD": false,
+                "TR": false,
+                "US": false
+              }
+            },
+            "stagesKg": {
+              "CS": "577.7",
+              "RS": "1470",
+              "TD": "460",
+              "TR": "25.8",
+              "US": "1155.4"
+            },
+            "engineVersion": "pv-grid-1.0.0",
+            "gridEnergyKwh": "100000",
+            "totalEmissionsKg": "3688.9",
+            "footprintKgPerKwh": "0.038830526315789473684210526315789473684210526315789",
+            "deliveredEnergyKwh": "95000"
+          }
+        }
+      ]
+    }
+  ],
+  "baselineHash": "8e74be1603e2169338b11d5ba87cac940f877e3d51e3c41355d5411d1268c05e",
+  "note": "用户指定的构造案例流程验收；演示账号复核记录用于测试状态流转。PRODUCTION 为既有计算/提交接口分支名。"
+}

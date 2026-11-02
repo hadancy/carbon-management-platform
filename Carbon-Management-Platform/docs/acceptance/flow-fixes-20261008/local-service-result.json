@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-08T07:27:29.326Z",
+  "status": "PASSED",
+  "/api/health": 200,
+  "/api/ready": 200,
+  "authentication": 200,
+  "reportListing": 200,
+  "oldTemplatePreview": 200,
+  "oldPdfVerified": true,
+  "casePage": 200
+}

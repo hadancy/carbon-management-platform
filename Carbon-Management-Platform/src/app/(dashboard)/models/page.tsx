@@ -1,16 +1,27 @@
-import { ModuleLanding } from "@/components/module-landing";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getActiveSchoolContext, requirePrincipal } from "@/server/auth/access";
+import { listSchoolModels } from "@/server/models/service";
+import { toModelView } from "@/server/models/view";
+import { canSchool } from "@/shared/permissions";
+import { ModelWorkbench } from "@/components/models/model-workbench";
 
-export default function ModelsPage() {
+export default async function ModelsPage() {
+  const principal = await requirePrincipal(await headers());
+  const selectedSchoolId = (await cookies()).get("active_school")?.value;
+  const context = await getActiveSchoolContext(principal, selectedSchoolId);
+  if (!context) redirect("/no-school");
+  const { schoolModels, publicModels } = await listSchoolModels(
+    context.schoolId,
+  );
+
   return (
-    <ModuleLanding
-      index="01"
-      title="碳足迹模型"
-      description="定义产品生命周期、活动数据项与因子，并管理模型版本。"
-      steps={[
-        "创建模型与草稿版本",
-        "配置生命周期阶段和数据项",
-        "提交审核并发布只读版本",
-      ]}
+    <ModelWorkbench
+      scope="SCHOOL"
+      models={schoolModels.map(toModelView)}
+      publicModels={publicModels.map(toModelView)}
+      canWrite={canSchool(context.role, "model.write")}
+      canReview={canSchool(context.role, "model.publish")}
     />
   );
 }

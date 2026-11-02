@@ -1,0 +1,192 @@
+{
+  "checkedAt": "2026-10-08T07:17:48.904Z",
+  "status": "PASSED",
+  "fixes": {
+    "status": "PASSED",
+    "checkedAt": "2026-10-08T07:17:45.179Z",
+    "artifacts": "/Users/hadancy/workspace/project/碳管理平台/Carbon-Management-Platform/docs/acceptance/flow-fixes-20261008",
+    "titleLineLengths": [
+      17,
+      18
+    ],
+    "mobile": {
+      "viewport": 390,
+      "body": 390,
+      "document": 390,
+      "height": 1614
+    },
+    "pdfSha256": "c71c96fe79033a73b84e0918e40945c4b054eb73c345a9da025a559ef837ebf3",
+    "browserErrors": [],
+    "checks": [
+      "不完整规则与非法模板保留草稿",
+      "模板选择、默认文案、版本与快照冻结",
+      "模板篡改摘要拦截",
+      "无效 ID 与跨校页面返回 404",
+      "25 年紧凑表格、批量补齐及保存",
+      "390 像素页面无横向溢出",
+      "审核角色待办与搜索",
+      "长标题无孤字行",
+      "旧草稿非法单位在计算前定位字段并切换活动页签",
+      "历史结果数据项名称与固定来源面板",
+      "保存后保留年度电量页签"
+    ]
+  },
+  "load": {
+    "status": "PASSED",
+    "synthetic": true,
+    "seededCases": 500,
+    "concurrency": 20,
+    "requests": 200,
+    "failures": 0,
+    "durationMs": 1134,
+    "requestsPerSecond": 176.44,
+    "p50Ms": 108,
+    "p95Ms": 148,
+    "maxMs": 206,
+    "peakDatabaseConnections": 11,
+    "responseBytes": 40331050,
+    "endpoints": [
+      "案例列表",
+      "案例详情",
+      "报告列表",
+      "已缓存 PDF 下载"
+    ],
+    "scope": "本机预发布演练；正式规模和首次 PDF 渲染吞吐须在部署目标另行验收"
+  },
+  "recovery": {
+    "status": "PASSED",
+    "durationMs": 1255,
+    "archiveBytes": 461223,
+    "tables": [
+      {
+        "table": "Account",
+        "rows": 7,
+        "sha256": "df05138b95c0e108b808b670fac1547fe714f95dc2069d5043816f723dfc9da9"
+      },
+      {
+        "table": "AccountingCase",
+        "rows": 3,
+        "sha256": "2d6b0a8f5e869a863c92184e109ff5fa05d0c843d680c0e7578c7351b3f8833e"
+      },
+      {
+        "table": "AccountingReview",
+        "rows": 2,
+        "sha256": "0d89f8731b4416508e6395fac0d2bb7519fb6bc335dbadfce8a168430c35ebac"
+      },
+      {
+        "table": "AccountingRevision",
+        "rows": 5,
+        "sha256": "3fce960f3c255dfe2ad7ac6c0cb3f6073b34d07005d55f10e906255236fd3266"
+      },
+      {
+        "table": "AuditLog",
+        "rows": 149,
+        "sha256": "cfd93ef6b34fc1f46b4efa44ddbf9a39ab483aea769f2e307f94274524efd7f2"
+      },
+      {
+        "table": "CalculationRun",
+        "rows": 5,
+        "sha256": "a688b26e933ac6aecc9d76d5d20ef263de5c2341133a45051edb244d88e2271b"
+      },
+      {
+        "table": "FileAsset",
+        "rows": 1,
+        "sha256": "b5ce48ddbd8f5b6c887b0314fd73460e95b708a558970ce0f1dd00f480e94711"
+      },
+      {
+        "table": "FootprintModel",
+        "rows": 4,
+        "sha256": "17418c1e0255f813b4ba5e35a8e5e034b4087b71b2f037a460908b7e65bb540c"
+      },
+      {
+        "table": "FootprintReport",
+        "rows": 3,
+        "sha256": "47c04bdf64284a520b96a025fa8c036fe5e7117d576741de88faa62239609392"
+      },
+      {
+        "table": "ModelVersion",
+        "rows": 4,
+        "sha256": "91032eeae65e0f9777e724bab223b464743df49f1c3b899beefc8fdf70b2163a"
+      },
+      {
+        "table": "PlatformRole",
+        "rows": 1,
+        "sha256": "4286ff5dc882dde7ae8273e1565c70695688491a76ae98e9447a6670f4df6140"
+      },
+      {
+        "table": "PublicDataVersion",
+        "rows": 16,
+        "sha256": "5705e11e73752c9d10960aa8907961d0984f18e07dc3d28f92547dbdd100671f"
+      },
+      {
+        "table": "ReportExport",
+        "rows": 2,
+        "sha256": "86b5d61520bce4bafd344de557c11abe8f8d8bc1310e621dc5e896d4725f49ad"
+      },
+      {
+        "table": "ReportRevision",
+        "rows": 6,
+        "sha256": "811b3cb772fb4962f7357e14dca3314d7fc14e3ce0be47e923cc2854c09642c8"
+      },
+      {
+        "table": "School",
+        "rows": 2,
+        "sha256": "4ffea5b0531b2594730db4c356c203ac79f9262ad14ce8024ef22ab5b3614b16"
+      },
+      {
+        "table": "SchoolMembership",
+        "rows": 6,
+        "sha256": "eae3cd669787a249c653f0591598bcb35068d9b0048fe2368c1fed22569d2240"
+      },
+      {
+        "table": "Session",
+        "rows": 7,
+        "sha256": "e3e46f566a0a542874a3f0415e0049221f049bc9326f1c295e2a6115deddd422"
+      },
+      {
+        "table": "User",
+        "rows": 7,
+        "sha256": "f8d42dabb1e2bf4fd2c72a275f2eaf492f52686ff80b5ea8b701e66aeefd6ba0"
+      },
+      {
+        "table": "Verification",
+        "rows": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table": "_prisma_migrations",
+        "rows": 9,
+        "sha256": "98501179945fd0b44f585fb22948da2c32545731161638a1990aa3697602af83"
+      }
+    ],
+    "checks": [
+      "完整自定义格式备份",
+      "独立数据库恢复",
+      "全部表行数及 SHA-256 一致（含附件、固定快照、审核、会话与 PDF 字节）",
+      "恢复后迁移可重复执行"
+    ]
+  },
+  "checks": {
+    "unitTests": 38,
+    "typecheck": "PASSED",
+    "lint": "PASSED",
+    "schema": "PASSED",
+    "productionWebpackBuild": "PASSED",
+    "stage3to7Integration": "PASSED",
+    "composeSyntax": "PASSED",
+    "containerImageBuild": "BLOCKED_DOCKER_DNS",
+    "productionDeployment": "PENDING_TARGET_AND_BUSINESS_SIGNOFF",
+    "format": "PASSED"
+  },
+  "localService": {
+    "checkedAt": "2026-10-08T07:27:29.326Z",
+    "status": "PASSED",
+    "/api/health": 200,
+    "/api/ready": 200,
+    "authentication": 200,
+    "reportListing": 200,
+    "oldTemplatePreview": 200,
+    "oldPdfVerified": true,
+    "casePage": 200
+  }
+}

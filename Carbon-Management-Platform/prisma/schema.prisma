@@ -23,37 +23,135 @@ enum PublicDataType {
   REPORT_TEMPLATE
 }
 
+enum ModelScope {
+  PUBLIC
+  SCHOOL
+}
+
+enum ModelVersionStatus {
+  DRAFT
+  SUBMITTED
+  REJECTED
+  PUBLISHED
+}
+
+enum AccountingRevisionStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum AccountingReviewDecision {
+  APPROVE
+  REJECT
+}
+
+enum ReportRevisionStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
 model School {
-  id          String             @id @default(uuid()) @db.Uuid
-  code        String             @unique @db.VarChar(64)
-  name        String             @db.VarChar(200)
-  status      RecordStatus       @default(ACTIVE)
-  memberships SchoolMembership[]
-  auditLogs   AuditLog[]
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  id                  String               @id @default(uuid()) @db.Uuid
+  code                String               @unique @db.VarChar(64)
+  name                String               @db.VarChar(200)
+  status              RecordStatus         @default(ACTIVE)
+  memberships         SchoolMembership[]
+  auditLogs           AuditLog[]
+  footprintModels     FootprintModel[]
+  accountingCases     AccountingCase[]
+  accountingRevisions AccountingRevision[]
+  calculationRuns     CalculationRun[]
+  fileAssets          FileAsset[]
+  footprintReports    FootprintReport[]
+  reportRevisions     ReportRevision[]
+  reportExports       ReportExport[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 }
 
 model User {
-  id                 String              @id @default(uuid()) @db.Uuid
-  email              String              @unique @db.VarChar(320)
-  displayName        String              @db.VarChar(120)
-  emailVerified      Boolean             @default(false)
-  image              String?
-  role               String?             @db.VarChar(100)
-  banned             Boolean?            @default(false)
-  banReason          String?
-  banExpires         DateTime?
-  status             RecordStatus        @default(ACTIVE)
-  deletedAt          DateTime?
-  memberships        SchoolMembership[]
-  platformRoles      PlatformRole[]
-  sessions           Session[]
-  accounts           Account[]
-  auditLogs          AuditLog[]
-  publicDataVersions PublicDataVersion[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  id                           String               @id @default(uuid()) @db.Uuid
+  email                        String               @unique @db.VarChar(320)
+  displayName                  String               @db.VarChar(120)
+  emailVerified                Boolean              @default(false)
+  image                        String?
+  role                         String?              @db.VarChar(100)
+  banned                       Boolean?             @default(false)
+  banReason                    String?
+  banExpires                   DateTime?
+  status                       RecordStatus         @default(ACTIVE)
+  deletedAt                    DateTime?
+  memberships                  SchoolMembership[]
+  platformRoles                PlatformRole[]
+  sessions                     Session[]
+  accounts                     Account[]
+  auditLogs                    AuditLog[]
+  publicDataVersions           PublicDataVersion[]
+  dataItemVersions             DataItemVersion[]
+  modelVersionsCreated         ModelVersion[]       @relation("ModelCreator")
+  modelVersionsEdited          ModelVersion[]       @relation("ModelEditor")
+  modelVersionsSubmitted       ModelVersion[]       @relation("ModelSubmitter")
+  modelVersionsReviewed        ModelVersion[]       @relation("ModelReviewer")
+  accountingRevisionsCreated   AccountingRevision[] @relation("AccountingCreator")
+  accountingRevisionsEdited    AccountingRevision[] @relation("AccountingEditor")
+  accountingRevisionsSubmitted AccountingRevision[] @relation("AccountingSubmitter")
+  calculationRunsCreated       CalculationRun[]
+  accountingReviews            AccountingReview[]
+  fileAssetsUploaded           FileAsset[]
+  reportRevisionsCreated       ReportRevision[]     @relation("ReportCreator")
+  reportRevisionsEdited        ReportRevision[]     @relation("ReportEditor")
+  reportRevisionsSubmitted     ReportRevision[]     @relation("ReportSubmitter")
+  reportRevisionsReviewed      ReportRevision[]     @relation("ReportReviewer")
+  reportExportsCreated         ReportExport[]
+  createdAt                    DateTime             @default(now())
+  updatedAt                    DateTime             @updatedAt
+}
+
+model FootprintModel {
+  id              String         @id @default(uuid()) @db.Uuid
+  scope           ModelScope
+  schoolId        String?        @db.Uuid
+  school          School?        @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  code            String         @db.VarChar(80)
+  sourceVersionId String?        @db.Uuid
+  sourceVersion   ModelVersion?  @relation("TemplateSource", fields: [sourceVersionId], references: [id], onDelete: Restrict)
+  versions        ModelVersion[] @relation("ModelVersions")
+  createdAt       DateTime       @default(now())
+  archivedAt      DateTime?
+
+  @@index([scope, createdAt])
+  @@index([scope, archivedAt])
+}
+
+model ModelVersion {
+  id                  String               @id @default(uuid()) @db.Uuid
+  modelId             String               @db.Uuid
+  model               FootprintModel       @relation("ModelVersions", fields: [modelId], references: [id], onDelete: Restrict)
+  version             Int
+  status              ModelVersionStatus   @default(DRAFT)
+  content             Json
+  createdById         String               @db.Uuid
+  createdBy           User                 @relation("ModelCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  lastEditedById      String               @db.Uuid
+  lastEditedBy        User                 @relation("ModelEditor", fields: [lastEditedById], references: [id], onDelete: Restrict)
+  submittedById       String?              @db.Uuid
+  submittedBy         User?                @relation("ModelSubmitter", fields: [submittedById], references: [id], onDelete: Restrict)
+  reviewedById        String?              @db.Uuid
+  reviewedBy          User?                @relation("ModelReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+  reviewNote          String?              @db.VarChar(2000)
+  submittedAt         DateTime?
+  publishedAt         DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  derivedModels       FootprintModel[]     @relation("TemplateSource")
+  accountingRevisions AccountingRevision[]
+
+  @@unique([modelId, version])
+  @@index([status, createdAt])
 }
 
 model Session {
@@ -126,21 +224,72 @@ model PlatformRole {
 }
 
 model PublicDataVersion {
-  id          String            @id @default(uuid()) @db.Uuid
-  type        PublicDataType
-  code        String            @db.VarChar(80)
-  version     String            @db.VarChar(40)
-  title       String            @db.VarChar(200)
-  source      String?
-  content     Json
-  status      PublicationStatus @default(DRAFT)
-  createdById String            @db.Uuid
-  createdBy   User              @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  createdAt   DateTime          @default(now())
-  publishedAt DateTime?
+  id                  String               @id @default(uuid()) @db.Uuid
+  type                PublicDataType
+  code                String               @db.VarChar(80)
+  version             String               @db.VarChar(40)
+  title               String               @db.VarChar(200)
+  source              String?
+  content             Json
+  status              PublicationStatus    @default(DRAFT)
+  createdById         String               @db.Uuid
+  createdBy           User                 @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt           DateTime             @default(now())
+  publishedAt         DateTime?
+  retiredAt           DateTime?
+  retirementReason    String?              @db.VarChar(1000)
+  accountingRevisions AccountingRevision[] @relation("AccountingRule")
 
   @@unique([type, code, version])
   @@index([status, type])
+  @@index([type, status, retiredAt])
+}
+
+model DataItem {
+  id        String            @id @default(uuid()) @db.Uuid
+  code      String            @unique @db.VarChar(80)
+  nextVersion Int             @default(2)
+  versions  DataItemVersion[]
+  createdAt DateTime          @default(now())
+}
+
+model DataItemVersion {
+  id                    String            @id @default(uuid()) @db.Uuid
+  dataItemId            String            @db.Uuid
+  dataItem              DataItem          @relation(fields: [dataItemId], references: [id], onDelete: Restrict)
+  version               Int
+  revision              Int               @default(1)
+  status                PublicationStatus @default(DRAFT)
+  dataName              String            @db.VarChar(200)
+  specModel             String            @default("") @db.VarChar(200)
+  manufacturer          String            @default("") @db.VarChar(200)
+  carbonFootprintFactor String            @default("") @db.VarChar(120)
+  functionalUnit        String            @default("") @db.VarChar(120)
+  emissionFactor        String            @default("") @db.VarChar(120)
+  factorSource          String            @default("") @db.VarChar(300)
+  dataSource            String            @default("") @db.VarChar(300)
+  createdById           String            @db.Uuid
+  createdBy             User              @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  publishedAt           DateTime?
+  retiredAt             DateTime?
+  retirementReason      String?           @db.VarChar(1000)
+  usages                DataItemUsage[]
+
+  @@unique([dataItemId, version])
+  @@index([status, retiredAt, createdAt])
+  @@index([functionalUnit, status])
+}
+
+// Model version IDs are historical identifiers: usage survives draft removal/deletion.
+model DataItemUsage {
+  dataItemVersionId String          @db.Uuid
+  dataItemVersion   DataItemVersion @relation(fields: [dataItemVersionId], references: [id], onDelete: Restrict)
+  modelVersionId    String          @db.Uuid
+  createdAt         DateTime        @default(now())
+
+  @@id([dataItemVersionId, modelVersionId])
 }
 
 model AuditLog {
@@ -156,5 +305,181 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   @@index([actorId, createdAt])
+  @@index([schoolId, createdAt])
+}
+
+model AccountingCase {
+  id                String               @id @default(uuid()) @db.Uuid
+  schoolId          String               @db.Uuid
+  school            School               @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  code              String               @db.VarChar(80)
+  product           String               @db.VarChar(200)
+  currentRevisionId String?              @db.Uuid
+  currentRevision   AccountingRevision?  @relation("CurrentAccountingRevision", fields: [currentRevisionId], references: [id], onDelete: Restrict)
+  revisions         AccountingRevision[] @relation("CaseRevisions")
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@unique([schoolId, code])
+  @@index([schoolId, createdAt])
+  @@index([schoolId, updatedAt])
+}
+
+model AccountingRevision {
+  id              String                   @id @default(uuid()) @db.Uuid
+  caseId          String                   @db.Uuid
+  case            AccountingCase           @relation("CaseRevisions", fields: [caseId], references: [id], onDelete: Restrict)
+  currentForCases AccountingCase[]         @relation("CurrentAccountingRevision")
+  schoolId        String                   @db.Uuid
+  school          School                   @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  revisionNo      Int
+  inputRevision   Int                      @default(1)
+  modelVersionId  String                   @db.Uuid
+  modelVersion    ModelVersion             @relation(fields: [modelVersionId], references: [id], onDelete: Restrict)
+  ruleVersionId   String?                  @db.Uuid
+  ruleVersion     PublicDataVersion?       @relation("AccountingRule", fields: [ruleVersionId], references: [id], onDelete: Restrict)
+  scenario        String                   @db.VarChar(40)
+  inputs          Json
+  status          AccountingRevisionStatus @default(DRAFT)
+  createdById     String                   @db.Uuid
+  createdBy       User                     @relation("AccountingCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  lastEditedById  String                   @db.Uuid
+  lastEditedBy    User                     @relation("AccountingEditor", fields: [lastEditedById], references: [id], onDelete: Restrict)
+  submittedById   String?                  @db.Uuid
+  submittedBy     User?                    @relation("AccountingSubmitter", fields: [submittedById], references: [id], onDelete: Restrict)
+  submittedRunId  String?                  @db.Uuid
+  submittedRun    CalculationRun?          @relation("SubmittedAccountingRun", fields: [submittedRunId], references: [id], onDelete: Restrict)
+  submittedAt     DateTime?
+  runs            CalculationRun[]
+  reviews         AccountingReview[]
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  @@unique([caseId, revisionNo])
+  @@index([schoolId, status, createdAt])
+}
+
+model CalculationRun {
+  id                 String               @id @default(uuid()) @db.Uuid
+  revisionId         String               @db.Uuid
+  revision           AccountingRevision   @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  schoolId           String               @db.Uuid
+  school             School               @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  inputRevision      Int
+  requestId          String               @db.VarChar(100)
+  inputHash          String               @db.VarChar(64)
+  engineVersion      String               @db.VarChar(80)
+  schemaVersion      Int
+  mode               String               @db.VarChar(20)
+  snapshots          Json
+  result             Json
+  createdById        String               @db.Uuid
+  createdBy          User                 @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  reviews            AccountingReview[]
+  submittedRevisions AccountingRevision[] @relation("SubmittedAccountingRun")
+  footprintReports   FootprintReport[]
+  createdAt          DateTime             @default(now())
+
+  @@unique([revisionId, requestId])
+  @@index([schoolId, revisionId, createdAt])
+}
+
+model AccountingReview {
+  id         String                   @id @default(uuid()) @db.Uuid
+  revisionId String                   @db.Uuid
+  revision   AccountingRevision       @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  runId      String                   @db.Uuid
+  run        CalculationRun           @relation(fields: [runId], references: [id], onDelete: Restrict)
+  actorId    String                   @db.Uuid
+  actor      User                     @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  decision   AccountingReviewDecision
+  reason     String                   @db.VarChar(2000)
+  createdAt  DateTime                 @default(now())
+
+  @@unique([revisionId])
+  @@index([actorId, createdAt])
+}
+
+model FileAsset {
+  id           String   @id @default(uuid()) @db.Uuid
+  schoolId     String   @db.Uuid
+  school       School   @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  uploadedById String   @db.Uuid
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  name         String   @db.VarChar(255)
+  mediaType    String   @db.VarChar(100)
+  size         Int
+  contentHash  String   @db.VarChar(64)
+  content      Bytes
+  createdAt    DateTime @default(now())
+
+  @@index([schoolId, createdAt])
+}
+
+model FootprintReport {
+  id                String           @id @default(uuid()) @db.Uuid
+  schoolId          String           @db.Uuid
+  school            School           @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  code              String           @db.VarChar(80)
+  calculationRunId  String           @db.Uuid
+  calculationRun    CalculationRun   @relation(fields: [calculationRunId], references: [id], onDelete: Restrict)
+  templateVersion   String           @db.VarChar(80)
+  templateSnapshot  Json?
+  sourceSnapshot    Json
+  currentRevisionId String?          @db.Uuid
+  currentRevision   ReportRevision?  @relation("CurrentReportRevision", fields: [currentRevisionId], references: [id], onDelete: Restrict)
+  revisions         ReportRevision[] @relation("ReportRevisions")
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@unique([schoolId, code])
+  @@index([schoolId, updatedAt])
+}
+
+model ReportRevision {
+  id                String               @id @default(uuid()) @db.Uuid
+  reportId          String               @db.Uuid
+  report            FootprintReport      @relation("ReportRevisions", fields: [reportId], references: [id], onDelete: Restrict)
+  currentForReports FootprintReport[]    @relation("CurrentReportRevision")
+  schoolId          String               @db.Uuid
+  school            School               @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  revisionNo        Int
+  contentRevision   Int                  @default(1)
+  status            ReportRevisionStatus @default(DRAFT)
+  contentSnapshot   Json
+  contentHash       String?              @db.VarChar(64)
+  createdById       String               @db.Uuid
+  createdBy         User                 @relation("ReportCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  lastEditedById    String               @db.Uuid
+  lastEditedBy      User                 @relation("ReportEditor", fields: [lastEditedById], references: [id], onDelete: Restrict)
+  submittedById     String?              @db.Uuid
+  submittedBy       User?                @relation("ReportSubmitter", fields: [submittedById], references: [id], onDelete: Restrict)
+  submittedAt       DateTime?
+  reviewedById      String?              @db.Uuid
+  reviewedBy        User?                @relation("ReportReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+  reviewerName      String?              @db.VarChar(120)
+  reviewReason      String?              @db.VarChar(2000)
+  reviewedAt        DateTime?
+  export            ReportExport?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@unique([reportId, revisionNo])
+  @@index([schoolId, status, updatedAt])
+}
+
+model ReportExport {
+  id          String         @id @default(uuid()) @db.Uuid
+  revisionId  String         @unique @db.Uuid
+  revision    ReportRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  schoolId    String         @db.Uuid
+  school      School         @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  contentHash String         @db.VarChar(64)
+  fileHash    String         @db.VarChar(64)
+  content     Bytes
+  createdById String         @db.Uuid
+  createdBy   User           @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime       @default(now())
+
   @@index([schoolId, createdAt])
 }

@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-09T06:55:03.675Z",
+  "scope": "LOCAL_PV_PUBLIC_MODEL_EXAMPLE",
+  "status": "PASSED",
+  "model": {
+    "id": "657d5b0a-71cb-4ce5-8c49-867af5a65c01",
+    "code": "DEMO_PV_PUBLIC_TEMPLATE",
+    "name": "并网光伏碳足迹公用模板（演示示例）",
+    "scope": "PUBLIC",
+    "schoolId": null,
+    "sourceVersionId": null,
+    "versionId": "96f573a0-eb08-42ea-81cc-041432ba76d6",
+    "version": 1,
+    "status": "PUBLISHED",
+    "publishedAt": "2026-10-09T06:52:58.164Z",
+    "contentHash": "9e130a35742745334aeaa7f7f0ee444aa1f6e62e0b81bfda859408c14489ebb9",
+    "content": {
+      "name": "并网光伏碳足迹公用模板（演示示例）",
+      "stages": [
+        {
+          "id": "90ae4e2f-db36-4bd1-a4ff-de6f04ccc8ab",
+          "name": "原材料制备与获取",
+          "categories": [
+            {
+              "id": "bcb55b6f-196d-4586-b3b0-450c54d7b035",
+              "name": "基础建材",
+              "items": [
+                {
+                  "id": "52e3512b-a944-4a7c-bfe7-802685810cbd",
+                  "dataName": "普通硅酸盐水泥",
+                  "specModel": "普通硅酸盐水泥（演示）",
+                  "dataSource": "演示工程量；引用后填写实际材料采购及工程量凭证",
+                  "factorSource": "DEMO_STD_REF_RS v1（演示）；GB/T 47652—2026 表 A.2（引自 GB/T 51366—2019）",
+                  "manufacturer": "示例材料供应商（演示）",
+                  "emissionFactor": "735",
+                  "functionalUnit": "t",
+                  "carbonFootprintFactor": "示例参考资料"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "a753df53-a512-45a3-80c1-ebf7708c13e3",
+          "name": "运输",
+          "categories": [
+            {
+              "id": "f52beec0-a756-4fe7-a01c-a65957821c1d",
+              "name": "原材料与设备运输",
+              "items": [
+                {
+                  "id": "dadcf90a-046b-4dc0-9b40-aad5a31aa3c1",
+                  "dataName": "重型柴油货车运输（载重18t）",
+                  "specModel": "重型柴油货车，载重 18 t（演示）",
+                  "dataSource": "演示运输台账；引用后填写实际重量、运输距离及凭证",
+                  "factorSource": "DEMO_STD_REF_TR v1（演示）；GB/T 47652—2026 表 A.3（引自 GB/T 51366—2019）",
+                  "manufacturer": "示例运输单位（演示）",
+                  "emissionFactor": "0.129",
+                  "functionalUnit": "t_km",
+                  "carbonFootprintFactor": "示例参考资料"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "989761ae-a532-4560-bbe5-d9e2feac9cda",
+          "name": "设施建设",
+          "categories": [
+            {
+              "id": "c548b66b-4d1f-4e03-abb0-70d4b5e714a3",
+              "name": "施工能源",
+              "items": [
+                {
+                  "id": "7c0937ba-1068-4f43-9996-1d67bc024c01",
+                  "dataName": "施工外购电力",
+                  "specModel": "施工外购电力（演示）",
+                  "dataSource": "演示施工电表；引用后填写建设期间用电及凭证",
+                  "factorSource": "DEMO_STD_REF_CS v1（演示）；2024 年全国电力碳足迹因子 表 1；标准表 A.4",
+                  "manufacturer": "示例供电单位（演示）",
+                  "emissionFactor": "0.5777",
+                  "functionalUnit": "kWh",
+                  "carbonFootprintFactor": "示例参考资料"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "366d6f5c-443e-4829-aa04-369016c8a99b",
+          "name": "生产及退役",
+          "categories": [
+            {
+              "id": "4f7e855c-a89d-4257-9abc-4b0da72d125a",
+              "name": "运行与退役能源",
+              "items": [
+                {
+                  "id": "66741cce-15b6-4a62-996d-0dbcadc83891",
+                  "dataName": "生产及退役外购电力",
+                  "specModel": "生产及退役外购电力（演示）",
+                  "dataSource": "演示运行与退役电量；引用后填写实际台账及凭证",
+                  "factorSource": "DEMO_STD_REF_US v1（演示）；2024 年全国电力碳足迹因子 表 1；标准表 A.4",
+                  "manufacturer": "示例供电单位（演示）",
+                  "emissionFactor": "0.5777",
+                  "functionalUnit": "kWh",
+                  "carbonFootprintFactor": "示例参考资料"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "863dc169-1646-4e75-b293-6abcb1e93e73",
+          "name": "输配电",
+          "categories": [
+            {
+              "id": "085cf8d3-1294-4fd2-bc08-5b4c2eed7518",
+              "name": "并网输配电",
+              "items": [
+                {
+                  "id": "59ea09d5-755c-4c1e-b30a-30fcda1c2bcd",
+                  "dataName": "输配电（不含线损）",
+                  "specModel": "不含线损的输配电简化因子（演示）",
+                  "dataSource": "演示上网电量；核算页录入逐年电量、线损率及简化法依据",
+                  "factorSource": "DEMO_STD_REF_TD v1（演示）；2024 年全国电力碳足迹因子 表 3；标准表 A.6",
+                  "manufacturer": "示例电网单位（演示）",
+                  "emissionFactor": "0.0046",
+                  "functionalUnit": "kWh",
+                  "carbonFootprintFactor": "示例参考资料"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "boundary": "原材料制备与获取、运输、设施建设、生产及退役、输配电五阶段。当前为最小演示清单，引用后按实际项目补充设备与活动数据。",
+      "description": "用于演示平台公用模板发布、学校引用及并网光伏核算。模板包含五个阶段、五个大类和五个数据项，演示数值与现有 DEMO 因子一致，可用于试算。学校引用后形成独立草稿，应补充实际设备清单、数据来源和边界说明；正式计算在核算页选择适用的已发布因子及规则版本。名称、规格和供应单位均为演示示例。",
+      "functionalUnit": "kWh",
+      "boundaryDiagram": "",
+      "referenceStandard": "GB/T 47652—2026（工程演示参考；正式采用按业务确认版本）",
+      "calculationProfile": {
+        "formula": "PV_GRID_V1",
+        "product": "PV",
+        "itemMappings": [
+          {
+            "role": "ACTIVITY",
+            "itemId": "52e3512b-a944-4a7c-bfe7-802685810cbd",
+            "factorActivityUnit": "t"
+          },
+          {
+            "role": "TRANSPORT",
+            "itemId": "dadcf90a-046b-4dc0-9b40-aad5a31aa3c1",
+            "factorActivityUnit": "t_km"
+          },
+          {
+            "role": "ACTIVITY",
+            "itemId": "7c0937ba-1068-4f43-9996-1d67bc024c01",
+            "factorActivityUnit": "kWh"
+          },
+          {
+            "role": "ACTIVITY",
+            "itemId": "66741cce-15b6-4a62-996d-0dbcadc83891",
+            "factorActivityUnit": "kWh"
+          },
+          {
+            "role": "GRID_FACTOR",
+            "itemId": "59ea09d5-755c-4c1e-b30a-30fcda1c2bcd",
+            "factorActivityUnit": "kWh"
+          }
+        ],
+        "stageMappings": [
+          {
+            "stageId": "90ae4e2f-db36-4bd1-a4ff-de6f04ccc8ab",
+            "calculationStage": "RS"
+          },
+          {
+            "stageId": "a753df53-a512-45a3-80c1-ebf7708c13e3",
+            "calculationStage": "TR"
+          },
+          {
+            "stageId": "989761ae-a532-4560-bbe5-d9e2feac9cda",
+            "calculationStage": "CS"
+          },
+          {
+            "stageId": "366d6f5c-443e-4829-aa04-369016c8a99b",
+            "calculationStage": "US"
+          },
+          {
+            "stageId": "863dc169-1646-4e75-b293-6abcb1e93e73",
+            "calculationStage": "TD"
+          }
+        ]
+      },
+      "functionalQuantity": 1,
+      "functionalDescription": "并网光伏电量，功能单位为 1 kWh"
+    }
+  },
+  "paths": {
+    "administrator": "/admin/models/657d5b0a-71cb-4ce5-8c49-867af5a65c01/versions/96f573a0-eb08-42ea-81cc-041432ba76d6",
+    "school": "/models/657d5b0a-71cb-4ce5-8c49-867af5a65c01/versions/96f573a0-eb08-42ea-81cc-041432ba76d6"
+  },
+  "structure": {
+    "stages": 5,
+    "categories": 5,
+    "items": 5,
+    "functionalQuantity": 1,
+    "functionalUnit": "kWh",
+    "formula": "PV_GRID_V1"
+  },
+  "schoolVisibility": [
+    {
+      "code": "DEMO_PV_A",
+      "publishedVersionVisible": true
+    },
+    {
+      "code": "DEMO_PV_B",
+      "publishedVersionVisible": true
+    }
+  ],
+  "referenceCalculation": {
+    "virtualSchoolClone": true,
+    "persistentCaseCreated": false,
+    "mode": "TRIAL",
+    "input": "tests/fixtures/pv-acceptance-reference.json with remapped item IDs",
+    "totalEmissionsKg": "3688.9",
+    "gridEnergyKwh": "100000",
+    "deliveredEnergyKwh": "95000",
+    "displayFootprintKgPerKwh": "0.038831"
+  },
+  "preservation": {
+    "existingDomainRecordsUnchanged": true,
+    "fingerprints": {
+      "School": {
+        "rows": 2,
+        "sha256": "4722f33d44ea8136a9738b20e0e0d27e13594ff86b4e29cd9cd2396666341ee4"
+      },
+      "User": {
+        "rows": 4,
+        "sha256": "572483a5cb2122819c3d75b763f87908a31bd46a65e55fed95f35efb4a84c334"
+      },
+      "SchoolMembership": {
+        "rows": 3,
+        "sha256": "ef0ff3aca330157c471f213014ac362c46772c0a58c347549f1484ce1bed50a7"
+      },
+      "PlatformRole": {
+        "rows": 1,
+        "sha256": "bdb3468500f70dab72b7d1264e9af216f650632748cdb26e8b6b5003c324a68e"
+      },
+      "Account": {
+        "rows": 4,
+        "sha256": "5abe5e9776e7db6a93f06ea29cd53d54bd292c48e440bdb6b9ba1b160be14108"
+      },
+      "FootprintModel": {
+        "rows": 1,
+        "sha256": "6b9e6b35e14922f2e3a97fd84f58b2d2f5677f167481f3c20785d717aab78daf"
+      },
+      "ModelVersion": {
+        "rows": 1,
+        "sha256": "878dc59043e9e1065e721ef83f860379fe22cb79f45059f32d825dce1c984acd"
+      },
+      "PublicDataVersion": {
+        "rows": 6,
+        "sha256": "fc0451dede7f56d51e63ecca970977f898cbe1a1f9d1b38c6ae5497fb2fb6332"
+      },
+      "AccountingCase": {
+        "rows": 1,
+        "sha256": "c23e6ad5ca115002560251e38b101c943188fb67ec706ea5c80e7394cd60020e"
+      },
+      "AccountingRevision": {
+        "rows": 3,
+        "sha256": "7d8d2636fc1819517c5473ced50958712a48c22e3f196b2e0057c091d95dbbb1"
+      },
+      "CalculationRun": {
+        "rows": 4,
+        "sha256": "9b453273fdda944f2d2edccae52e3a80e609d20128ca8a25ce29509e3f9d8687"
+      },
+      "AccountingReview": {
+        "rows": 2,
+        "sha256": "a7f8f1e69153cb561e0de0a3dfb61d9d554c14bee3f93a6b6de99269dee523fe"
+      },
+      "FileAsset": {
+        "rows": 1,
+        "sha256": "3324e10ab3d1e05102ea5c7bf19bc15756edc465df49efd529237e395d0c7041"
+      },
+      "FootprintReport": {
+        "rows": 1,
+        "sha256": "0fe64dada03d28a6247616132728001ea01e778556283180b1e5f9824e2b57c1"
+      },
+      "ReportRevision": {
+        "rows": 3,
+        "sha256": "935de38bfb9a271d9e0ac5a5c568bab9fca6dd55b55b6704d86d731b913774c0"
+      },
+      "ReportExport": {
+        "rows": 1,
+        "sha256": "ff96951f80fd7e8919e044711a84dca0fadf47523a6a6aeb649c937de0590c43"
+      }
+    }
+  },
+  "checks": [
+    "Existing administrator authorization used",
+    "Shared model creation and publication services with audit",
+    "Five-stage mapping and item units validated",
+    "Reference numbers remain independently expected",
+    "Published template visible to both demo schools",
+    "All existing school/account/model/case/report/evidence/PDF data unchanged"
+  ],
+  "verification": {
+    "status": "PASSED",
+    "origin": "http://localhost:3000",
+    "httpChecks": [
+      "DEMO_PV_A 实际登录后可见公用模板并打开已发布版本",
+      "学校通过真实创建接口引用模板，得到独立草稿及来源版本关联；内容、因子和计算映射完整复制",
+      "临时验证学校副本、版本和其单条创建审计已按精确 ID 清理",
+      "DEMO_PV_B 实际登录后可见公用模板并打开已发布版本"
+    ],
+    "temporarySchoolCopyRemoved": true,
+    "verificationSessionsRemoved": true,
+    "publishedTemplateUnchanged": true,
+    "originalDemoDataUnchanged": true
+  },
+  "finalCounts": {
+    "publicModels": 1,
+    "schoolModels": 1,
+    "modelVersions": 2,
+    "cases": 1,
+    "reports": 1
+  }
+}

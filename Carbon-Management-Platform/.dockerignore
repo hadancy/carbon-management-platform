@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.env
+.env.*
+docs
+output
+tests
+*.tsbuildinfo
+.DS_Store
