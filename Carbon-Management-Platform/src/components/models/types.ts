@@ -10,6 +10,7 @@ export type ModelVersionView = {
   submittedById: string | null;
   reviewNote: string | null;
   publishedAt: string | null;
+  updatedAt: string;
 };
 
 export type ModelView = {

@@ -1,14 +1,18 @@
 "use client";
 
+import { formatBeijingTime } from "@/shared/beijing-time";
 import { Alert, Descriptions, Drawer } from "antd";
-import type { DataItemEntry } from "@/shared/data-items";
-import { factorUnitLabel, unitSymbol } from "@/shared/units";
+import {
+  formatDataItemEmissionFactor,
+  type AdminDataItemEntry,
+} from "@/shared/data-items";
+import { unitSymbol } from "@/shared/units";
 
 export function DataItemDetails({
   entry,
   onClose,
 }: {
-  entry: DataItemEntry;
+  entry: AdminDataItemEntry;
   onClose: () => void;
 }) {
   return (
@@ -60,9 +64,14 @@ export function DataItemDetails({
           {
             key: "factor",
             label: "排放因子",
-            children: entry.emissionFactor
-              ? `${entry.emissionFactor}${entry.functionalUnit ? ` ${factorUnitLabel(entry.functionalUnit)}` : "（单位待填写）"}`
-              : "—",
+            children: formatDataItemEmissionFactor(entry),
+          },
+          {
+            key: "references",
+            label: "引用记录",
+            children: entry.referenceCount
+              ? `${entry.referenceCount} 个模型版本（含历史引用）`
+              : "从未引用",
           },
           {
             key: "factor-source",
@@ -76,14 +85,17 @@ export function DataItemDetails({
           },
           {
             key: "published",
-            label: "发布时间（UTC）",
-            children:
-              entry.publishedAt?.replace("T", " ").slice(0, 19) ?? "尚未发布",
+            label: "发布时间（北京时间）",
+            children: entry.publishedAt
+              ? formatBeijingTime(entry.publishedAt)
+              : "尚未发布",
           },
           {
             key: "retired",
-            label: "停用时间（UTC）",
-            children: entry.retiredAt?.replace("T", " ").slice(0, 19) ?? "—",
+            label: "停用时间（北京时间）",
+            children: entry.retiredAt
+              ? formatBeijingTime(entry.retiredAt)
+              : "—",
           },
         ]}
       />

@@ -1,53 +1,45 @@
 "use client";
 
+import { Button, Empty, Grid, Table, Tag, Tooltip, Typography } from "antd";
 import {
-  Button,
-  Empty,
-  Grid,
-  Space,
-  Table,
-  Tag,
-  Tooltip,
-  Typography,
-} from "antd";
-import type {
-  AdminDataItemEntry,
-  AdminDataItemList,
+  formatDataItemEmissionFactor,
+  type AdminDataItemGroup,
+  type AdminDataItemGroups,
 } from "@/shared/data-items";
-import { factorUnitLabel, unitSymbol } from "@/shared/units";
+import { unitSymbol } from "@/shared/units";
+import {
+  DataItemVersionActions,
+  type DataItemVersionHandlers,
+} from "./data-item-version-actions";
+
+function displayVersion(group: AdminDataItemGroup) {
+  return group.current ?? group.draft ?? group.latestRetired;
+}
 
 export function DataItemTable({
-  entries,
+  groups,
   total,
   query,
   loading,
   busy,
   onPage,
-  onView,
-  onEdit,
-  onPublish,
-  onNewVersion,
-  onRetire,
-  onDelete,
-}: AdminDataItemList & {
+  onHistory,
+  actions,
+}: AdminDataItemGroups & {
   loading: boolean;
   busy: boolean;
   onPage: (page: number, pageSize: number) => void;
-  onView: (entry: AdminDataItemEntry) => void;
-  onEdit: (entry: AdminDataItemEntry) => void;
-  onPublish: (entry: AdminDataItemEntry) => void;
-  onNewVersion: (entry: AdminDataItemEntry) => void;
-  onRetire: (entry: AdminDataItemEntry) => void;
-  onDelete: (entry: AdminDataItemEntry) => void;
+  onHistory: (group: AdminDataItemGroup) => void;
+  actions: DataItemVersionHandlers;
 }) {
   const screens = Grid.useBreakpoint();
   return (
-    <Table<AdminDataItemEntry>
+    <Table<AdminDataItemGroup>
       size="small"
       rowKey="id"
-      dataSource={entries}
+      dataSource={groups}
       loading={loading}
-      scroll={{ x: 1454 }}
+      scroll={{ x: 1260 }}
       locale={{
         emptyText: (
           <Empty
@@ -66,169 +58,155 @@ export function DataItemTable({
         total,
         showSizeChanger: true,
         pageSizeOptions: [10, 20, 50, 100],
-        showTotal: (count) => `共 ${count} 个版本`,
+        showTotal: (count) => `共 ${count} 个数据项`,
         onChange: onPage,
       }}
       columns={[
-        { title: "编码", dataIndex: "code", width: 150, ellipsis: true },
         {
-          title: "版本",
-          dataIndex: "version",
-          width: 64,
-          render: (version: number) => `v${version}`,
+          title: "数据项",
+          width: 250,
+          render: (_, group) => {
+            const name = displayVersion(group)?.dataName || "未命名数据项";
+            return (
+              <div>
+                <Typography.Text
+                  ellipsis={{ tooltip: name }}
+                  className="block font-medium"
+                >
+                  {name}
+                </Typography.Text>
+                <Typography.Text
+                  type="secondary"
+                  ellipsis={{ tooltip: group.code }}
+                  className="block text-xs"
+                >
+                  {group.code}
+                </Typography.Text>
+              </div>
+            );
+          },
         },
         {
-          title: "数据名称",
-          dataIndex: "dataName",
-          width: 170,
-          ellipsis: true,
+          title: "规格及厂家",
+          width: 184,
+          render: (_, group) => {
+            const entry = displayVersion(group);
+            if (!entry?.specModel && !entry?.manufacturer) return "—";
+            return (
+              <div>
+                {entry.specModel && (
+                  <Typography.Text
+                    ellipsis={{ tooltip: entry.specModel }}
+                    className="block"
+                  >
+                    {entry.specModel}
+                  </Typography.Text>
+                )}
+                {entry.manufacturer && (
+                  <Typography.Text
+                    type="secondary"
+                    ellipsis={{ tooltip: entry.manufacturer }}
+                    className="block text-xs"
+                  >
+                    {entry.manufacturer}
+                  </Typography.Text>
+                )}
+              </div>
+            );
+          },
         },
         {
-          title: "规格型号",
-          dataIndex: "specModel",
-          width: 140,
-          ellipsis: true,
-          render: (value: string) => value || "—",
-        },
-        {
-          title: "生产厂家",
-          dataIndex: "manufacturer",
-          width: 150,
-          ellipsis: true,
-          render: (value: string) => value || "—",
+          title: "当前发布版",
+          width: 113,
+          render: (_, { current, historyCount }) =>
+            current ? (
+              <div className="space-y-0.5">
+                <Tag color="green">v{current.version}</Tag>
+                <Tooltip title="包含历史版本和已移除的引用">
+                  <Typography.Text type="secondary" className="block text-xs">
+                    {current.referenceCount
+                      ? `${current.referenceCount} 个模型版本`
+                      : "从未引用"}
+                  </Typography.Text>
+                </Tooltip>
+              </div>
+            ) : (
+              <Typography.Text type="secondary">
+                {historyCount ? "已停用" : "尚未发布"}
+              </Typography.Text>
+            ),
         },
         {
           title: "活动单位",
-          dataIndex: "functionalUnit",
-          width: 100,
-          render: (value: string) =>
-            value ? (
-              unitSymbol(value)
-            ) : (
-              <Typography.Text type="secondary">待填写</Typography.Text>
-            ),
+          width: 84,
+          render: (_, { current }) =>
+            current ? unitSymbol(current.functionalUnit) : "—",
         },
         {
           title: "排放因子",
-          width: 170,
-          render: (_, entry) =>
-            entry.emissionFactor
-              ? `${entry.emissionFactor}${entry.functionalUnit ? ` ${factorUnitLabel(entry.functionalUnit)}` : "（单位待填写）"}`
-              : "—",
+          width: 138,
+          render: (_, { current }) =>
+            current ? formatDataItemEmissionFactor(current) : "—",
         },
         {
-          title: "引用记录",
-          width: 110,
-          render: (_, entry) =>
-            entry.referenceCount ? (
-              <Tooltip title="包含历史版本和已移除的引用">
-                <Typography.Text>
-                  {entry.referenceCount} 个模型版本
-                </Typography.Text>
-              </Tooltip>
+          title: "草稿",
+          width: 165,
+          render: (_, { draft }) =>
+            draft ? (
+              <div>
+                <Tag color="blue">v{draft.version} 草稿</Tag>
+                <DataItemVersionActions
+                  entry={draft}
+                  busy={busy}
+                  actions={actions}
+                />
+              </div>
             ) : (
-              <Typography.Text type="secondary">从未引用</Typography.Text>
+              "—"
             ),
         },
         {
-          title: "状态",
+          title: "历史版本",
           fixed: screens.md ? "right" : undefined,
-          width: 90,
-          render: (_, entry) => (
-            <Tag
-              color={
-                entry.retiredAt
-                  ? "orange"
-                  : entry.status === "PUBLISHED"
-                    ? "green"
-                    : "default"
-              }
-            >
-              {entry.retiredAt
-                ? "已停用"
-                : entry.status === "PUBLISHED"
-                  ? "已发布"
-                  : "草稿"}
-            </Tag>
-          ),
-        },
-        {
-          title: "操作",
-          fixed: screens.md ? "right" : undefined,
-          width: 310,
-          render: (_, entry) => (
-            <Space size={0} wrap>
+          width: 108,
+          render: (_, group) =>
+            group.historyCount ? (
               <Button
                 type="link"
                 size="small"
                 disabled={busy}
-                onClick={() => onView(entry)}
+                onClick={() => onHistory(group)}
               >
-                查看
+                历史版本（{group.historyCount}）
               </Button>
-              {entry.status === "DRAFT" ? (
-                <>
-                  <Button
-                    type="link"
-                    size="small"
-                    disabled={busy}
-                    onClick={() => onEdit(entry)}
-                  >
-                    编辑
-                  </Button>
-                  <Button
-                    type="link"
-                    size="small"
-                    disabled={busy}
-                    onClick={() => onPublish(entry)}
-                  >
-                    发布
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    type="link"
-                    size="small"
-                    disabled={busy}
-                    onClick={() => onNewVersion(entry)}
-                  >
-                    创建新版本
-                  </Button>
-                  {!entry.retiredAt && (
-                    <Button
-                      type="link"
-                      size="small"
-                      danger
-                      disabled={busy}
-                      onClick={() => onRetire(entry)}
-                    >
-                      停用
-                    </Button>
-                  )}
-                </>
-              )}
-              <Tooltip
-                title={
-                  entry.referenceCount > 0
-                    ? "已被模型引用（含历史记录），只能停用"
-                    : "删除当前版本"
-                }
+            ) : (
+              "—"
+            ),
+        },
+        {
+          title: "操作",
+          fixed: screens.md ? "right" : undefined,
+          width: 218,
+          render: (_, { current, draft, latestRetired }) =>
+            current ? (
+              <DataItemVersionActions
+                entry={current}
+                busy={busy}
+                actions={actions}
+                hasDraft={!!draft}
+              />
+            ) : latestRetired ? (
+              <Button
+                type="link"
+                size="small"
+                disabled={busy}
+                onClick={() => actions.onNewVersion(latestRetired)}
               >
-                <span>
-                  <Button
-                    type="link"
-                    size="small"
-                    danger
-                    disabled={busy || entry.referenceCount > 0}
-                    onClick={() => onDelete(entry)}
-                  >
-                    删除
-                  </Button>
-                </span>
-              </Tooltip>
-            </Space>
-          ),
+                创建新版本
+              </Button>
+            ) : (
+              "—"
+            ),
         },
       ]}
     />

@@ -1,4 +1,5 @@
 "use client";
+import { formatBeijingTime } from "@/shared/beijing-time";
 import Link from "next/link";
 import { Table, Tag } from "antd";
 import { REPORT_STATUS_LABELS } from "@/shared/reports";
@@ -49,7 +50,7 @@ export function ReportTable({ rows }: { rows: ReportRow[] }) {
         {
           title: "更新时间",
           dataIndex: "updatedAt",
-          render: (value: string) => new Date(value).toLocaleString("zh-CN"),
+          render: (value: string) => formatBeijingTime(value),
         },
         {
           title: "操作",

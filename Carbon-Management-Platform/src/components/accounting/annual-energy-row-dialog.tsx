@@ -1,25 +1,52 @@
 "use client";
 import { useEffect } from "react";
 import { Form, Input, InputNumber, Modal, Select } from "antd";
-import { z } from "zod";
 import { convertUnit } from "@/domain/calculation/units";
+import {
+  AccountingDatePicker,
+  isAccountingDate,
+  normalizeAccountingDate,
+  requiredAccountingDateRule,
+} from "./accounting-date-picker";
 import { yearPeriod, type EnergyRow } from "./annual-energy-data";
 import { EvidenceUpload } from "./evidence-upload";
+
+type AnnualEnergyFormValues = Omit<EnergyRow, "evidenceAssetIds"> & {
+  evidenceAssetIds?: EnergyRow["evidenceAssetIds"];
+};
+
+function expectedPeriodEnd(start: unknown) {
+  if (!isAccountingDate(start)) return null;
+  try {
+    return yearPeriod(start, 0).periodEnd;
+  } catch {
+    return null;
+  }
+}
+
 export function AnnualEnergyRowDialog({
   row,
   years,
+  focusField,
   onCancel,
   onSave,
 }: {
   row: EnergyRow | null;
   years: number;
+  focusField?: string;
   onCancel: () => void;
   onSave: (row: EnergyRow) => void;
 }) {
-  const [form] = Form.useForm<EnergyRow>();
+  const [form] = Form.useForm<AnnualEnergyFormValues>();
   const source = Form.useWatch("source", form);
   useEffect(() => {
-    if (row) form.setFieldsValue(row);
+    if (row) {
+      form.setFieldsValue({
+        ...row,
+        periodStart: normalizeAccountingDate(row.periodStart),
+        periodEnd: normalizeAccountingDate(row.periodEnd),
+      });
+    }
   }, [row, form]);
   return (
     <Modal
@@ -29,8 +56,19 @@ export function AnnualEnergyRowDialog({
       onOk={() => form.submit()}
       okText="应用到草稿"
       destroyOnHidden
+      afterOpenChange={(open) => {
+        if (open && focusField)
+          form.scrollToField(focusField, { focus: true, block: "center" });
+      }}
     >
-      <Form form={form} layout="vertical" preserve={false} onFinish={onSave}>
+      <Form
+        form={form}
+        layout="vertical"
+        preserve={false}
+        onFinish={({ evidenceAssetIds, ...values }) =>
+          onSave({ ...values, evidenceAssetIds: evidenceAssetIds ?? [] })
+        }
+      >
         <div className="grid grid-cols-1 gap-x-3 sm:grid-cols-2">
           <Form.Item
             name="operatingYear"
@@ -64,40 +102,38 @@ export function AnnualEnergyRowDialog({
             name="periodStart"
             label="期间起始"
             rules={[
-              { required: true },
+              requiredAccountingDateRule,
               {
-                validator: (_, value) =>
-                  z.iso.date().safeParse(value).success
-                    ? Promise.resolve()
-                    : Promise.reject(Error("请输入 YYYY-MM-DD 日期")),
+                validator: async (_, date: unknown) => {
+                  if (isAccountingDate(date)) yearPeriod(date, 0);
+                },
               },
             ]}
           >
-            <Input placeholder="YYYY-MM-DD" />
+            <AccountingDatePicker
+              onChange={(date) =>
+                form.setFieldValue("periodEnd", expectedPeriodEnd(date) ?? "")
+              }
+            />
           </Form.Item>
           <Form.Item
             name="periodEnd"
             label="期间结束"
             dependencies={["periodStart"]}
             rules={[
-              { required: true },
+              requiredAccountingDateRule,
               {
-                validator: (_, value) => {
-                  try {
-                    if (
-                      yearPeriod(form.getFieldValue("periodStart"), 0)
-                        .periodEnd !== value
-                    )
-                      throw Error("须填写完整运行年的结束日期");
-                    return Promise.resolve();
-                  } catch (error) {
-                    return Promise.reject(error);
-                  }
+                validator: async (_, date: unknown) => {
+                  const expected = expectedPeriodEnd(
+                    form.getFieldValue("periodStart"),
+                  );
+                  if (isAccountingDate(date) && expected && date !== expected)
+                    throw Error(`完整运行年度的结束日期应为 ${expected}`);
                 },
               },
             ]}
           >
-            <Input placeholder="YYYY-MM-DD" />
+            <AccountingDatePicker />
           </Form.Item>
           <Form.Item
             name="value"

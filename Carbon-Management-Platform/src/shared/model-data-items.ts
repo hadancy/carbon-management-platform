@@ -1,6 +1,12 @@
 import { z } from "zod";
-import { dataItemFields, type DataItemEntry } from "./data-items";
+import {
+  dataItemFields,
+  sameDataItemFields,
+  type DataItemEntry,
+  type DataItemFields,
+} from "./data-items";
 import type { ModelItem } from "./models";
+import { factorUnitLabel, isNumericFactor } from "./units";
 
 export const modelItemSourceSchema = z
   .object({
@@ -25,6 +31,43 @@ export function modelItemFromCatalog(
       version: entry.version,
     },
   };
+}
+
+function isPlainCarbonFootprintFactor(value: string, activityUnit: string) {
+  if (!value || isNumericFactor(value)) return true;
+  const factor = value.replaceAll("₂", "2");
+  const unit = factorUnitLabel(activityUnit).replaceAll("₂", "2");
+  return (
+    factor.endsWith(unit) && isNumericFactor(factor.slice(0, -unit.length))
+  );
+}
+
+export function canUpdateModelDataItemDraft(
+  previous: DataItemFields,
+  next: DataItemFields,
+) {
+  if (
+    !sameDataItemFields(
+      {
+        ...previous,
+        emissionFactor: next.emissionFactor,
+        carbonFootprintFactor: next.carbonFootprintFactor,
+      },
+      next,
+    )
+  )
+    return false;
+  return (
+    previous.carbonFootprintFactor === next.carbonFootprintFactor ||
+    (isPlainCarbonFootprintFactor(
+      previous.carbonFootprintFactor,
+      previous.functionalUnit,
+    ) &&
+      isPlainCarbonFootprintFactor(
+        next.carbonFootprintFactor,
+        next.functionalUnit,
+      ))
+  );
 }
 
 export function selectModelDataItems(

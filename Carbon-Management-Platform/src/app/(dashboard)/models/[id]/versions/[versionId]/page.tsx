@@ -15,10 +15,11 @@ export default async function SchoolModelVersionPage({
   const context = await getActiveSchoolContext(principal, selectedSchoolId);
   if (!context) redirect("/no-school");
   const { id, versionId } = await params;
-  const { model, version } = await loadModelVersionPage(id, versionId, {
-    kind: "SCHOOL",
-    schoolId: context.schoolId,
-  });
+  const { model, version, dataItemsToReview } = await loadModelVersionPage(
+    id,
+    versionId,
+    { kind: "SCHOOL", schoolId: context.schoolId },
+  );
 
   return (
     <ModelVersionEditor
@@ -33,6 +34,7 @@ export default async function SchoolModelVersionPage({
       }
       currentUserId={principal.userId}
       backHref="/models"
+      dataItemsToReview={dataItemsToReview}
     />
   );
 }

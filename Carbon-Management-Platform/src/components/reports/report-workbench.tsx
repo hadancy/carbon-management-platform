@@ -1,4 +1,5 @@
 "use client";
+import { formatBeijingTime } from "@/shared/beijing-time";
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
@@ -284,13 +285,13 @@ export function ReportWorkbench({
                   <p>
                     正文版本：{revision.contentRevision}；提交时间：
                     {revision.submittedAt
-                      ? new Date(revision.submittedAt).toLocaleString("zh-CN")
+                      ? formatBeijingTime(revision.submittedAt)
                       : "未提交"}
                   </p>
                   <p>
                     审核时间：
                     {revision.reviewedAt
-                      ? new Date(revision.reviewedAt).toLocaleString("zh-CN")
+                      ? formatBeijingTime(revision.reviewedAt)
                       : "未审核"}
                   </p>
                   <p className="break-all">

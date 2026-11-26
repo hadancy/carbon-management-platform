@@ -5,30 +5,50 @@ import { sumAnnualEnergy } from "@/domain/calculation/energy";
 import { AnnualEnergyRowDialog } from "./annual-energy-row-dialog";
 import { AnnualEnergyTools } from "./annual-energy-tools";
 import { yearPeriod, type EnergyRow } from "./annual-energy-data";
+
+export type AnnualEnergyEditRequest = { index: number; field: string };
+
 function AnnualEnergyTable({
   value = [],
   onChange,
   years,
   disabled,
   id,
+  editRequest,
+  onEditRequestClose,
 }: {
   value?: EnergyRow[];
   onChange?: (rows: EnergyRow[]) => void;
   years: number;
   disabled: boolean;
   id?: string;
+  editRequest: AnnualEnergyEditRequest | null;
+  onEditRequestClose: () => void;
 }) {
   const { message } = App.useApp();
-  const [editing, setEditing] = useState<{
+  const [localEdit, setEditing] = useState<{
     index: number;
     row: EnergyRow;
   } | null>(null);
+  const requestedRow = editRequest ? value[editRequest.index] : undefined;
+  const editing =
+    editRequest && requestedRow
+      ? { index: editRequest.index, row: requestedRow }
+      : localEdit;
+  function closeEdit() {
+    setEditing(null);
+    onEditRequestClose();
+  }
   const nextYear = () =>
     Array.from({ length: years }, (_, i) => i + 1).find(
       (year) => !value.some((row) => row.operatingYear === year),
     );
   const sorted = value
-    .map((row, index) => ({ ...row, index }))
+    .map((row, index) => ({
+      ...row,
+      index,
+      evidenceAssetIds: row.evidenceAssetIds ?? [],
+    }))
     .sort((a, b) => a.operatingYear - b.operatingYear);
   function copy(row: EnergyRow) {
     try {
@@ -160,7 +180,8 @@ function AnnualEnergyTable({
       <AnnualEnergyRowDialog
         row={editing?.row ?? null}
         years={years}
-        onCancel={() => setEditing(null)}
+        focusField={editRequest?.field}
+        onCancel={closeEdit}
         onSave={(row) => {
           if (
             value.some(
@@ -179,7 +200,7 @@ function AnnualEnergyTable({
                   index === editing?.index ? row : item,
                 ),
           );
-          setEditing(null);
+          closeEdit();
         }}
       />
     </div>
@@ -188,9 +209,13 @@ function AnnualEnergyTable({
 export function AnnualEnergyEditor({
   disabled,
   onChange,
+  editRequest,
+  onEditRequestClose,
 }: {
   disabled: boolean;
   onChange: () => void;
+  editRequest: AnnualEnergyEditRequest | null;
+  onEditRequestClose: () => void;
 }) {
   const form = Form.useFormInstance();
   const years = Form.useWatch("operatingYears", form) ?? 1;
@@ -226,6 +251,8 @@ export function AnnualEnergyEditor({
           years={years}
           disabled={disabled}
           onChange={() => onChange()}
+          editRequest={editRequest}
+          onEditRequestClose={onEditRequestClose}
         />
       </Form.Item>
     </Card>

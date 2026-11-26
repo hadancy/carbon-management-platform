@@ -4,6 +4,7 @@ import { parseEmissionFactorContent } from "@/shared/emission-factors";
 import { factorUnitLabel, isKnownUnit } from "@/shared/units";
 import type { Entry } from "./types";
 import { typeLabels } from "./types";
+import { PublicDataDetails } from "./public-data-details";
 
 type Props = {
   entries: Entry[];
@@ -58,21 +59,27 @@ export function PublicDataTable({
         scroll={{ x: 920 }}
         expandable={{
           expandedRowRender: (entry) => (
-            <pre className="whitespace-pre-wrap">{entry.content}</pre>
+            <PublicDataDetails type={entry.type} content={entry.content} />
           ),
         }}
         columns={[
-          { title: "类型", render: (_, entry) => typeLabels[entry.type] },
-          { title: "编码", dataIndex: "code" },
-          { title: "版本", dataIndex: "version" },
-          { title: "标题", dataIndex: "title" },
-          { title: "来源", dataIndex: "source" },
+          {
+            title: "类型",
+            width: 150,
+            render: (_, entry) => typeLabels[entry.type],
+          },
+          { title: "编码", dataIndex: "code", width: 200 },
+          { title: "版本", dataIndex: "version", width: 76 },
+          { title: "标题", dataIndex: "title", width: 200 },
+          { title: "来源", dataIndex: "source", width: 300 },
           {
             title: "因子数值/单位",
+            width: 200,
             render: (_, entry) => factorSummary(entry),
           },
           {
             title: "状态",
+            width: 100,
             render: (_, entry) => (
               <Tag
                 color={
@@ -93,6 +100,7 @@ export function PublicDataTable({
           },
           {
             title: "操作",
+            width: 230,
             render: (_, entry) =>
               entry.status === "DRAFT" ? (
                 <Space>

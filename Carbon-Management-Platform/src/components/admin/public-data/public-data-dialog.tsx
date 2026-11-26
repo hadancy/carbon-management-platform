@@ -5,6 +5,7 @@ import { typeLabels } from "./types";
 import { EmissionFactorFields } from "./emission-factor-fields";
 import { ReportTemplateFields } from "./report-template-fields";
 import { RuleConfigFields } from "./rule-config-fields";
+import { LegacyFactorPreview } from "./legacy-factor-preview";
 
 type Props = {
   editingId: string | null;
@@ -106,16 +107,7 @@ export function PublicDataDialog({
         {type === "EMISSION_FACTOR" ? (
           <>
             {legacyFactorContent && (
-              <Alert
-                type="warning"
-                title="旧版内容仅供核对；请补齐 v2 适用范围、来源和变更依据，保存后会保留原文"
-                description={
-                  <pre className="max-h-40 overflow-auto whitespace-pre-wrap">
-                    {legacyFactorContent}
-                  </pre>
-                }
-                className="mb-4"
-              />
+              <LegacyFactorPreview content={legacyFactorContent} />
             )}
             <EmissionFactorFields
               activityUnit={activityUnit}

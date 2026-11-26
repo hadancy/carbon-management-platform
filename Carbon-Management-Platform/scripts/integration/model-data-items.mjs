@@ -67,6 +67,7 @@ const occurrence = (entry, id = randomUUID()) => ({
     version: entry.version,
   },
 });
+export { occurrence as catalogOccurrence };
 
 export async function verifyModelDataItemReferences({
   expectStatus,
@@ -249,15 +250,19 @@ export async function verifyModelDataItemReferences({
     })
   ).entry;
   const v2 = await publish(nextDraft, nextFields);
+  const selectedV2 = structuredClone(version.content);
+  selectedV2.stages[0].categories[0].items = [
+    occurrence(v2, firstItem(version.content).id),
+  ];
   const saved = (
     await expectStatus(`/api/model-versions/${version.id}`, 200, {
       method: "PATCH",
       cookie: schoolCookie,
-      body: { ...version.content, description: "REF 已保存" },
+      body: { ...selectedV2, description: "REF 已保存" },
     })
   ).version;
-  assert.equal(firstItem(saved.content).emissionFactor, "2");
-  assert.equal(firstItem(saved.content).librarySource.version, 1);
+  assert.equal(firstItem(saved.content).emissionFactor, "3");
+  assert.equal(firstItem(saved.content).librarySource.version, 2);
   await expectStatus(`/api/model-versions/${version.id}/transition`, 200, {
     method: "POST",
     cookie: schoolCookie,
@@ -270,7 +275,7 @@ export async function verifyModelDataItemReferences({
       body: { action: "publish" },
     })
   ).version;
-  await expectStatus(`${library}/${source.id}/retire`, 200, {
+  await expectStatus(`${library}/${source.id}/retire`, 409, {
     method: "POST",
     cookie: adminCookie,
     body: { revision: source.revision, reason: "REF 停用旧版" },
@@ -297,7 +302,7 @@ export async function verifyModelDataItemReferences({
   await expectStatus(`/api/model-versions/${inherited.id}`, 200, {
     method: "PATCH",
     cookie: schoolCookie,
-    body: { ...inherited.content, description: "REF 保留已有停用版本" },
+    body: { ...inherited.content, description: "REF 保存新版草稿" },
   });
   const replace = structuredClone(inherited.content);
   replace.stages[0].categories[0].items = [
@@ -379,7 +384,18 @@ export async function verifyModelDataItemReferences({
       dataName: `REF UI 材料 ${index}`,
       specModel: `UI-${index}`,
     };
-    await publish(await createDraft(code, input), input);
+    const version = await publish(await createDraft(code, input), input);
+    if (index === 3) {
+      const revised = { ...input, emissionFactor: "200" };
+      const draft = (
+        await expectStatus(`${library}/${version.id}/new-version`, 201, {
+          method: "POST",
+          cookie: adminCookie,
+          body: revised,
+        })
+      ).entry;
+      await publish(draft, revised);
+    }
   }
   const pickerContent = structuredClone(content);
   pickerContent.stages[0].categories[0].items = [];

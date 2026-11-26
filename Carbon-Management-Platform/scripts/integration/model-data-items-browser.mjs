@@ -41,24 +41,28 @@ export async function verifyModelDataItemsBrowser({
       .locator("button.ant-btn-loading")
       .waitFor({ state: "hidden" });
     await dialog().getByPlaceholder("名称、编码、规格或厂家").fill(query);
-    const loaded = page.waitForResponse(
-      (response) =>
-        response.url().includes("/api/data-items?") &&
-        new URL(response.url()).searchParams.get("q") === query,
-    );
-    await dialog()
-      .getByRole("button", { name: /搜\s*索/ })
-      .click();
-    assert.equal((await loaded).status(), 200);
+    const [loaded] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().includes("/api/data-items?") &&
+          new URL(response.url()).searchParams.get("q") === query,
+      ),
+      dialog()
+        .getByRole("button", { name: /搜\s*索/ })
+        .click(),
+    ]);
+    assert.equal(loaded.status(), 200);
   }
   async function save() {
-    const response = page.waitForResponse(
-      (response) =>
-        response.url().endsWith(`/api/model-versions/${versionId}`) &&
-        response.request().method() === "PATCH",
-    );
-    await page.getByRole("button", { name: "保存草稿", exact: true }).click();
-    const result = await response;
+    const button = page.getByRole("button", { name: "保存草稿", exact: true });
+    const [result] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().endsWith(`/api/model-versions/${versionId}`) &&
+          response.request().method() === "PATCH",
+      ),
+      button.click(),
+    ]);
     assert.equal(result.status(), 200, await result.text());
     await page.getByText("修改已保存", { exact: true }).waitFor();
     return (await result.json()).version.content;
@@ -113,6 +117,8 @@ export async function verifyModelDataItemsBrowser({
       .getByRole("button", { name: /更\s*换/ })
       .click();
     await search("PICK_ITEM_03");
+    await pickerRow("PICK_ITEM_03").getByText("v2", { exact: true }).waitFor();
+    assert.equal(await pickerRow("PICK_ITEM_03").count(), 1);
     await pickerRow("PICK_ITEM_03").getByRole("radio").check();
     await dialog()
       .getByRole("button", { name: "确认更换", exact: true })
@@ -124,6 +130,7 @@ export async function verifyModelDataItemsBrowser({
     );
     assert.equal(changed.id, originalId);
     assert.equal(changed.factorSource, "REF 因子来源");
+    assert.equal(changed.emissionFactor, "200");
     await page.screenshot({
       path: join(artifacts, "model-references.png"),
       fullPage: true,
@@ -150,7 +157,7 @@ export async function verifyModelDataItemsBrowser({
     assert.equal(removed.stages[0].categories[0].items.length, 2);
     await page.reload();
     await modelRow("PICK_ITEM_03")
-      .getByText("PICK_ITEM_03 v1", { exact: true })
+      .getByText("PICK_ITEM_03 v2", { exact: true })
       .waitFor();
     await page.setViewportSize({ width: 390, height: 844 });
     await page
@@ -182,6 +189,7 @@ export async function verifyModelDataItemsBrowser({
             "save-and-reload",
             "duplicate-disabled",
             "replace-stable-id",
+            "current-version-only",
             "missing-item-guidance",
             "remove-occurrence",
             "390px-picker",

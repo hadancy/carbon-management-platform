@@ -1,3 +1,4 @@
+import { formatBeijingTime } from "@/shared/beijing-time";
 import Link from "next/link";
 import { Table, Tag } from "antd";
 import {
@@ -50,7 +51,7 @@ export function AccountingListTable({ cases }: { cases: CaseRow[] }) {
         {
           title: "更新时间",
           dataIndex: "updatedAt",
-          render: (value: string) => new Date(value).toLocaleString("zh-CN"),
+          render: (value: string) => formatBeijingTime(value),
           sorter: (a, b) => Date.parse(a.updatedAt) - Date.parse(b.updatedAt),
         },
         {

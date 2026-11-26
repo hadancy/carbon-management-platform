@@ -1,18 +1,19 @@
 "use client";
 
 import { Card, Form, Input, InputNumber, Select, Typography } from "antd";
+import {
+  AccountingDatePicker,
+  isAccountingDate,
+  requiredAccountingDateRule,
+} from "./accounting-date-picker";
 import type { RuleOption } from "./types";
 
 export function CaseMethodForm({
-  ruleVersionId,
   rules,
   disabled,
-  onRuleChange,
 }: {
-  ruleVersionId: string | null;
   rules: RuleOption[];
   disabled: boolean;
-  onRuleChange: (id: string | null) => void;
 }) {
   return (
     <Card size="small" title="案例基本信息与方法" className="!mb-4">
@@ -41,16 +42,30 @@ export function CaseMethodForm({
         <Form.Item
           name="collectionStart"
           label="采集开始日期"
-          rules={[{ required: true, message: "请输入开始日期" }]}
+          rules={[requiredAccountingDateRule]}
         >
-          <Input placeholder="YYYY-MM-DD" />
+          <AccountingDatePicker />
         </Form.Item>
         <Form.Item
           name="collectionEnd"
           label="采集结束日期"
-          rules={[{ required: true, message: "请输入结束日期" }]}
+          dependencies={["collectionStart"]}
+          rules={[
+            requiredAccountingDateRule,
+            ({ getFieldValue }) => ({
+              async validator(_, end: unknown) {
+                const start = getFieldValue("collectionStart");
+                if (
+                  isAccountingDate(start) &&
+                  isAccountingDate(end) &&
+                  end < start
+                )
+                  throw new Error("采集结束日期须为开始日期当天或之后");
+              },
+            }),
+          ]}
         >
-          <Input placeholder="YYYY-MM-DD" />
+          <AccountingDatePicker />
         </Form.Item>
         <Form.Item label="供电场景">
           <Typography.Text>并网上网（首版）</Typography.Text>
@@ -58,9 +73,9 @@ export function CaseMethodForm({
         <Form.Item
           name="referenceDate"
           label="核算参考日期"
-          rules={[{ required: true, message: "请输入日期" }]}
+          rules={[requiredAccountingDateRule]}
         >
-          <Input placeholder="YYYY-MM-DD" />
+          <AccountingDatePicker />
         </Form.Item>
         <Form.Item
           name="region"
@@ -116,18 +131,15 @@ export function CaseMethodForm({
         >
           <Input.TextArea rows={2} />
         </Form.Item>
-        <Form.Item label="规则版本">
+        <Form.Item name="ruleVersionId" label="规则版本">
           <Select
-            value={ruleVersionId ?? undefined}
             allowClear
             disabled={disabled}
             options={rules.map((rule) => ({
               value: rule.id,
               label: rule.label,
             }))}
-            onChange={(value) => {
-              onRuleChange(value ?? null);
-            }}
+            labelRender={({ label }) => label ?? "不可用的规则版本"}
             placeholder="正式计算需选择"
           />
         </Form.Item>

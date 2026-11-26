@@ -6,6 +6,10 @@ import { readJson } from "@/server/http/json";
 import { errorResponse } from "@/server/http/response";
 import { modelContentSchema } from "@/shared/models";
 
+const saveSchema = modelContentSchema.extend({
+  expectedUpdatedAt: z.iso.datetime().optional(),
+});
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -15,8 +19,16 @@ export async function PATCH(
       request.headers,
     );
     const id = z.uuid().parse((await params).id);
-    const content = modelContentSchema.parse(await readJson(request));
-    const version = await saveModelVersion(principal, context, id, content);
+    const { expectedUpdatedAt, ...content } = saveSchema.parse(
+      await readJson(request),
+    );
+    const version = await saveModelVersion(
+      principal,
+      context,
+      id,
+      content,
+      expectedUpdatedAt,
+    );
     return Response.json({ version });
   } catch (error) {
     return errorResponse(error);

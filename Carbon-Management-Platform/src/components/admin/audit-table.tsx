@@ -1,5 +1,6 @@
 "use client";
 
+import { formatBeijingTime } from "@/shared/beijing-time";
 import { Card, Flex, Table, Typography } from "antd";
 
 type AuditRow = {
@@ -33,8 +34,7 @@ export function AuditTable({ logs }: { logs: AuditRow[] }) {
             {
               title: "时间",
               dataIndex: "time",
-              render: (value: string) =>
-                new Date(value).toLocaleString("zh-CN"),
+              render: (value: string) => formatBeijingTime(value),
             },
             { title: "操作者", dataIndex: "actor" },
             { title: "范围", dataIndex: "school" },

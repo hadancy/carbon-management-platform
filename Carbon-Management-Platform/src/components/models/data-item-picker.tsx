@@ -41,7 +41,7 @@ export function DataItemPicker({
       className="[&_.ant-modal-body]:max-h-[70vh] [&_.ant-modal-body]:overflow-y-auto"
     >
       <Typography.Paragraph type="secondary" className="text-xs">
-        仅展示已发布、未停用的版本；展开查看来源资料。同一大类内已选用的数据项不能重复添加。资料由平台管理员维护，选用后保留当前版本。
+        每个数据项仅展示当前可选的发布版本。展开可查看来源资料。同一大类内已选用的数据项不能重复添加。
       </Typography.Paragraph>
       <DataItemPickerFilters
         loading={loading}
@@ -64,7 +64,7 @@ export function DataItemPicker({
       <DataItemPickerTable
         entries={data?.entries ?? []}
         total={data?.total ?? 0}
-        query={{ ...query, page: data?.query.page ?? query.page }}
+        query={data?.query ?? query}
         loading={loading}
         selected={selected}
         excludedIds={excludedIds}

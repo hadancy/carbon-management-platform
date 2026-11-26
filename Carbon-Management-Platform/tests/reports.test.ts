@@ -178,7 +178,7 @@ test("T07: HTML escapes editable text and historical source is detached from mut
   assert.ok(html.includes("&amp; 结论"));
 });
 
-test("T07: newer document versions clarify denominator and local review time while old templates remain stable", () => {
+test("T07: reports show Beijing review time with precision set by the template version", () => {
   const source = sourceFixture();
   const content = defaultReportContent(source, "TEST");
   const current = buildReportDocument(
@@ -191,9 +191,16 @@ test("T07: newer document versions clarify denominator and local review time whi
       (row) => row[0] === "输配电后电量（足迹分母）" && row[1] === "95000",
     ),
   );
-  assert.ok(current.reviewNote.includes("2026/10/07 10:00"));
+  assert.ok(current.reviewNote.includes("2026/10/07 22:00"));
+  assert.ok(
+    current.metadata.some(
+      ([label, value]) =>
+        label === "核算复核" && value.includes("2026/10/07 21:00"),
+    ),
+  );
   assert.ok(renderReportHtml(current).includes(".appendix{margin-top:8mm}"));
   const legacy = buildReportDocument(meta, content, source);
+  assert.ok(legacy.reviewNote.includes(" / 2026/10/07 / "));
   assert.ok(
     !legacy.tables[0].rows.some((row) => row[0] === "输配电后电量（足迹分母）"),
   );

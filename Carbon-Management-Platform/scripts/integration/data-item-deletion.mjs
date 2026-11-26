@@ -210,8 +210,20 @@ export async function verifyDataItemDeletion({
       3,
       "Deleting a version must never cause its version number to be reused",
     );
+    await expectStatus(`${root}/${v1.id}/retire`, 200, {
+      method: "POST",
+      cookie: adminCookie,
+      body: { revision: v1.revision, reason: "DELETE 发布前先停用" },
+    });
     const v3Published = await publish(v3);
-    await remove(v1);
+    await remove(v1, 404);
+    const remaining = await expectStatus(`${root}?q=${v1.code}`, 200, {
+      cookie: adminCookie,
+    });
+    assert.deepEqual(
+      remaining.entries.map(({ id }) => id),
+      [v3Published.id],
+    );
     assert.equal(
       (
         await client.query('SELECT id FROM "DataItemVersion" WHERE id = $1', [
@@ -258,6 +270,27 @@ export async function verifyDataItemDeletion({
         body: { revision: used.revision, reason: "DELETE 已引用可停用" },
       })
     ).entry;
+    await remove(usedStopped, 409);
+    const nextUsed = (
+      await expectStatus(`${root}/${used.id}/new-version`, 201, {
+        method: "POST",
+        cookie: adminCookie,
+        body: fields,
+      })
+    ).entry;
+    await publish(nextUsed);
+    const retiredHistory = await expectStatus(
+      `${root}?q=${used.code}&status=RETIRED`,
+      200,
+      { cookie: adminCookie },
+    );
+    assert.deepEqual(
+      retiredHistory.entries.map(({ id, referenceCount }) => ({
+        id,
+        referenceCount,
+      })),
+      [{ id: used.id, referenceCount: 1 }],
+    );
     await remove(usedStopped, 409);
     assert.equal(
       (
@@ -317,6 +350,23 @@ export async function verifyDataItemDeletion({
       0,
     );
     await remove(legacySource, 409);
+    const legacySuccessor = (
+      await expectStatus(`${root}/${legacySource.id}/new-version`, 201, {
+        method: "POST",
+        cookie: adminCookie,
+        body: fields,
+      })
+    ).entry;
+    await publish(legacySuccessor);
+    const retainedLegacy = await expectStatus(
+      `${root}?q=${legacySource.code}&status=RETIRED`,
+      200,
+      { cookie: adminCookie },
+    );
+    assert.deepEqual(
+      retainedLegacy.entries.map(({ id }) => id),
+      [legacySource.id],
+    );
     const migration = readFileSync(
       new URL(
         "../../prisma/migrations/20261029020000_data_item_deletion/migration.sql",
@@ -340,7 +390,52 @@ export async function verifyDataItemDeletion({
       method: "DELETE",
       cookie: schoolCookie,
     });
-    await remove(legacySource, 409);
+    await remove(retainedLegacy.entries[0], 409);
+
+    const publishRace = await publish(
+      await draft("DELETE_ON_PUBLICATION_RACE"),
+    );
+    const raceSuccessor = (
+      await expectStatus(`${root}/${publishRace.id}/new-version`, 201, {
+        method: "POST",
+        cookie: adminCookie,
+        body: fields,
+      })
+    ).entry;
+    const [releaseResult, referenceResult] = await Promise.all([
+      api(`${root}/${raceSuccessor.id}/publish`, {
+        method: "POST",
+        cookie: adminCookie,
+        body: { ...fields, revision: raceSuccessor.revision },
+      }),
+      api("/api/models", {
+        method: "POST",
+        cookie: schoolCookie,
+        body: {
+          code: "DELETE_ON_PUBLICATION_MODEL",
+          content: contentFor(publishRace),
+        },
+      }),
+    ]);
+    assert.equal(
+      releaseResult.response.status,
+      200,
+      JSON.stringify(releaseResult.data),
+    );
+    assert.ok([201, 400].includes(referenceResult.response.status));
+    assert.deepEqual(
+      releaseResult.data.deletedVersions,
+      referenceResult.response.status === 201 ? [] : [1],
+    );
+    const raceHistory = await expectStatus(
+      `${root}?q=${publishRace.code}&status=RETIRED`,
+      200,
+      { cookie: adminCookie },
+    );
+    assert.deepEqual(
+      raceHistory.entries.map(({ id }) => id),
+      referenceResult.response.status === 201 ? [publishRace.id] : [],
+    );
 
     for (let index = 0; index < 3; index++) {
       const race = await publish(await draft(`DELETE_RACE_${index}`));

@@ -16,3 +16,8 @@ export const pvRuleSchema = z
     path: ["effectiveTo"],
     message: "规则结束日期早于开始日期",
   });
+
+export type PvRulePeriod = Pick<
+  z.infer<typeof pvRuleSchema>,
+  "purpose" | "effectiveFrom" | "effectiveTo"
+>;

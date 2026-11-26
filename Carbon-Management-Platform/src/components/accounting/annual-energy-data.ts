@@ -19,10 +19,11 @@ export function yearPeriod(first: string, offset: number) {
   if (
     !/^\d{4}-\d{2}-\d{2}$/.test(first) ||
     !Number.isFinite(start.valueOf()) ||
-    start.toISOString().slice(0, 10) !== first ||
-    (start.getUTCMonth() === 1 && start.getUTCDate() === 29)
+    start.toISOString().slice(0, 10) !== first
   )
-    throw Error("请输入有效的首年起始日期；暂不支持 2 月 29 日起始的运行年");
+    throw Error("请输入有效的起始日期");
+  if (start.getUTCMonth() === 1 && start.getUTCDate() === 29)
+    throw Error("运行年度暂不支持以 2 月 29 日为起始日期");
   const end = new Date(start);
   end.setUTCFullYear(end.getUTCFullYear() + offset + 1);
   end.setUTCDate(end.getUTCDate() - 1);

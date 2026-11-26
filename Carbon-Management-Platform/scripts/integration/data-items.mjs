@@ -167,14 +167,31 @@ export async function verifyDataItemLibrary({
     cookie: adminCookie,
     body: nextFields,
   });
-  const v2 = (
-    await expectStatus(`${root}/${next.id}/publish`, 200, {
+  await expectStatus(`${root}/${next.id}/publish`, 409, {
+    method: "POST",
+    cookie: adminCookie,
+    body: { ...nextFields, revision: next.revision + 1 },
+  });
+  const stillAvailable = await expectStatus(
+    "/api/data-items?q=SYN_ITEM_STEEL",
+    200,
+    { cookie: schoolCookie },
+  );
+  assert.deepEqual(
+    stillAvailable.entries.map(({ id }) => id),
+    [published.id],
+  );
+  const { entry: v2, deletedVersions } = await expectStatus(
+    `${root}/${next.id}/publish`,
+    200,
+    {
       method: "POST",
       cookie: adminCookie,
       body: { ...nextFields, revision: next.revision },
-    })
-  ).entry;
+    },
+  );
   assert.equal(v2.emissionFactor, "2.7");
+  assert.deepEqual(deletedVersions, [1]);
 
   // Same name with a different specification is a separate catalog identity.
   const variant = (
@@ -190,37 +207,23 @@ export async function verifyDataItemLibrary({
     cookie: adminCookie,
     body: { revision: published.revision, reason: " " },
   });
-  await expectStatus(`${path}/retire`, 409, {
+  await expectStatus(`${path}/retire`, 404, {
     method: "POST",
     cookie: adminCookie,
     body: { revision: 1, reason: "SYN" },
-  });
-  const retired = (
-    await expectStatus(`${path}/retire`, 200, {
-      method: "POST",
-      cookie: adminCookie,
-      body: { revision: published.revision, reason: "SYN 来源更新，保留历史" },
-    })
-  ).entry;
-  assert.ok(retired.retiredAt);
-  assert.equal(retired.emissionFactor, "2.68");
-  assert.equal(retired.publishedAt, published.publishedAt);
-  await expectStatus(`${path}/retire`, 409, {
-    method: "POST",
-    cookie: adminCookie,
-    body: { revision: retired.revision, reason: "SYN 重复" },
   });
 
   for (const q of ["syn_item_steel", "公共钢材", "Q235-SYN", "SYN 测试厂家"]) {
     const list = await expectStatus(`${root}?q=${encodeURIComponent(q)}`, 200, {
       cookie: adminCookie,
     });
-    assert.ok(list.entries.some((entry) => entry.id === draft.id));
+    assert.ok(list.entries.some((entry) => entry.id === v2.id));
+    assert.ok(!list.entries.some((entry) => entry.id === published.id));
   }
   for (const [status, ids] of [
     ["PUBLISHED", [v2.id]],
     ["DRAFT", [variant.id]],
-    ["RETIRED", [draft.id]],
+    ["RETIRED", []],
   ]) {
     const list = await expectStatus(
       `${root}?q=SYN_ITEM&status=${status}&unit=kg`,
@@ -237,7 +240,7 @@ export async function verifyDataItemLibrary({
     200,
     { cookie: adminCookie },
   );
-  assert.equal(page2.total, 3);
+  assert.equal(page2.total, 2);
   assert.equal(page2.entries.length, 1);
   assert.equal(page2.query.page, 2);
   const overflow = await expectStatus(
@@ -245,7 +248,7 @@ export async function verifyDataItemLibrary({
     200,
     { cookie: adminCookie },
   );
-  assert.equal(overflow.query.page, 3);
+  assert.equal(overflow.query.page, 2);
   for (const query of [
     "pageSize=101",
     "status=INVALID",
@@ -254,9 +257,44 @@ export async function verifyDataItemLibrary({
   ])
     await expectStatus(`${root}?${query}`, 400, { cookie: adminCookie });
 
+  await expectStatus(`${root}/${v2.id}/retire`, 200, {
+    method: "POST",
+    cookie: adminCookie,
+    body: { revision: v2.revision, reason: "SYN 当前版本不再适用" },
+  });
+  const withdrawn = await expectStatus(
+    "/api/data-items?q=SYN_ITEM_STEEL",
+    200,
+    {
+      cookie: schoolCookie,
+    },
+  );
+  assert.equal(withdrawn.total, 0);
+  const historyPath = `${root}/history?dataItemId=${draft.dataItemId}&page=99&pageSize=1`;
+  await expectStatus(historyPath, 401);
+  await expectStatus(historyPath, 403, { cookie: viewerCookie });
+  const history = await expectStatus(historyPath, 200, { cookie: adminCookie });
+  assert.equal(history.total, 1);
+  assert.equal(history.page, 1);
+  assert.deepEqual(
+    history.entries.map(({ id }) => id),
+    [v2.id],
+  );
+
   const client = new pg.Client({ connectionString: databaseUrl });
   await client.connect();
   try {
+    const { rows: deleted } = await client.query(
+      'SELECT details FROM "AuditLog" WHERE action = $1 AND "targetId" = $2',
+      ["data-item.delete", published.id],
+    );
+    assert.equal(deleted.length, 1);
+    const { details } = deleted[0];
+    assert.equal(details.replacedByVersionId, v2.id);
+    assert.equal(details.dataItemDeleted, false);
+    assert.equal(details.snapshot.publishedAt, published.publishedAt);
+    for (const [field, value] of Object.entries(complete))
+      assert.equal(details.snapshot[field], value);
     const { rows } = await client.query(
       'SELECT action FROM "AuditLog" WHERE "targetType" = $1',
       ["DataItemVersion"],
@@ -267,6 +305,7 @@ export async function verifyDataItemLibrary({
       "data-item.publish",
       "data-item.new-version",
       "data-item.retire",
+      "data-item.delete",
     ])
       assert.ok(rows.some((row) => row.action === action));
   } finally {

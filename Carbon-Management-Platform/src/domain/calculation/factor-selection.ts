@@ -1,23 +1,77 @@
+import { z } from "zod";
 import {
   calculationFactorSchema,
   type CalculationFactor,
   type FactorVersionSnapshot,
 } from "@/shared/emission-factors";
-import type { PvStage } from "@/shared/calculation-profile";
-
 export type FactorProblem = { code: string; message: string };
+
+type FactorRange = Pick<
+  CalculationFactor["applicability"],
+  "stage" | "subject" | "region" | "technology" | "validFrom" | "validTo"
+>;
+
+export type FactorDetails = Pick<
+  CalculationFactor,
+  "purpose" | "activityUnit"
+> & {
+  applicability: FactorRange;
+};
+
+type FactorItem = { stage: string; unit: string; subject: string };
+type FactorTarget = FactorItem & {
+  region: string;
+  technology: string;
+  referenceDate?: string;
+  mode: "TRIAL" | "PRODUCTION";
+};
+
+const isoDate = z.iso.date();
+
+export function factorMatchesItem(factor: FactorDetails, item: FactorItem) {
+  const area = factor.applicability;
+  return (
+    area.stage === item.stage &&
+    factor.activityUnit === item.unit &&
+    (area.subject === "ALL" || area.subject === item.subject)
+  );
+}
+
+export function factorDateMatch(factor: FactorDetails, date?: string) {
+  const parsed = isoDate.safeParse(date);
+  if (!parsed.success) return "PENDING";
+  const { validFrom, validTo } = factor.applicability;
+  return parsed.data < validFrom || parsed.data > validTo ? "OUTSIDE" : "MATCH";
+}
+
+export function factorApplicabilityProblem(
+  factor: FactorDetails,
+  expected: FactorTarget,
+): FactorProblem | null {
+  const area = factor.applicability;
+  if (expected.mode === "PRODUCTION" && factor.purpose !== "PRODUCTION")
+    return { code: "TEST_FACTOR", message: "测试因子不能用于正式计算" };
+  if (!factorMatchesItem(factor, expected))
+    return {
+      code: "FACTOR_MISMATCH",
+      message: "因子的阶段、对象或分母单位不匹配",
+    };
+  if (
+    (area.region !== "ALL" && area.region !== expected.region) ||
+    (area.technology !== "ALL" && area.technology !== expected.technology)
+  )
+    return { code: "FACTOR_SCOPE", message: "因子地域或技术适用范围不匹配" };
+  const date = factorDateMatch(factor, expected.referenceDate);
+  if (date === "PENDING")
+    return { code: "FACTOR_DATE_REQUIRED", message: "请选择有效的核对日期" };
+  if (date === "OUTSIDE")
+    return { code: "FACTOR_EXPIRED", message: "核对日期超出因子适用期" };
+  return null;
+}
 
 export function selectFactor(
   snapshot: FactorVersionSnapshot | undefined,
-  expected: {
-    stage: PvStage;
-    unit: string;
-    subject: string;
-    region: string;
-    technology: string;
-    referenceDate: string;
-    mode: "TRIAL" | "PRODUCTION";
-  },
+  expected: FactorTarget,
 ): { factor: CalculationFactor | null; problem: FactorProblem | null } {
   if (!snapshot)
     return {
@@ -43,42 +97,6 @@ export function selectFactor(
       },
     };
   const factor = parsed.data;
-  const area = factor.applicability;
-  if (expected.mode === "PRODUCTION" && factor.purpose !== "PRODUCTION")
-    return {
-      factor: null,
-      problem: { code: "TEST_FACTOR", message: "测试因子不能用于正式计算" },
-    };
-  if (
-    area.stage !== expected.stage ||
-    factor.activityUnit !== expected.unit ||
-    (area.subject !== "ALL" && area.subject !== expected.subject)
-  )
-    return {
-      factor: null,
-      problem: {
-        code: "FACTOR_MISMATCH",
-        message: "因子的阶段、对象或分母单位不匹配",
-      },
-    };
-  if (
-    (area.region !== "ALL" && area.region !== expected.region) ||
-    (area.technology !== "ALL" && area.technology !== expected.technology)
-  )
-    return {
-      factor: null,
-      problem: {
-        code: "FACTOR_SCOPE",
-        message: "因子地域或技术适用范围不匹配",
-      },
-    };
-  if (
-    expected.referenceDate < area.validFrom ||
-    expected.referenceDate > area.validTo
-  )
-    return {
-      factor: null,
-      problem: { code: "FACTOR_EXPIRED", message: "因子不适用于核算日期" },
-    };
-  return { factor, problem: null };
+  const problem = factorApplicabilityProblem(factor, expected);
+  return { factor: problem ? null : factor, problem };
 }

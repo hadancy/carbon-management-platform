@@ -129,7 +129,7 @@ export async function resolveSnapshot(
         .filter((id): id is string => !!id),
     ),
   ];
-  const publicFactors = await db.publicDataVersion.findMany({
+  const publicVersions = await db.publicDataVersion.findMany({
     where: {
       id: { in: requestedIds },
       type: "EMISSION_FACTOR",
@@ -138,18 +138,21 @@ export async function resolveSnapshot(
     },
     orderBy: { id: "asc" },
   });
-  if (publicFactors.length !== requestedIds.length)
+  if (mode === "TRIAL" && publicVersions.length !== requestedIds.length)
     throw new RequestError("所选公用因子不存在或不可用", 400);
-  const factors: FactorVersionSnapshot[] = [
-    ...publicFactors.map((factor) => ({
+  const publicFactors: FactorVersionSnapshot[] = publicVersions.map(
+    (factor) => ({
       id: factor.id,
       code: factor.code,
       version: factor.version,
-      type: "EMISSION_FACTOR" as const,
-      status: "PUBLISHED" as const,
+      type: "EMISSION_FACTOR",
+      status: "PUBLISHED",
       retiredAt: factor.retiredAt?.toISOString() ?? null,
       content: factor.content,
-    })),
+    }),
+  );
+  const factors: FactorVersionSnapshot[] = [
+    ...publicFactors,
     ...modelFactors(content, version.version, version.publishedAt),
   ];
   const lines = inputs.lines.map((line) => ({
@@ -181,5 +184,6 @@ export async function resolveSnapshot(
       content,
     },
     factors,
+    publicFactors,
   };
 }

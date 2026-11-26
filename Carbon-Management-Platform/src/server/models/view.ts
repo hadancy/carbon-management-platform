@@ -18,6 +18,7 @@ type DatabaseModel = {
     submittedById: string | null;
     reviewNote: string | null;
     publishedAt: Date | null;
+    updatedAt: Date;
   }[];
 };
 
@@ -39,6 +40,7 @@ export function toModelView(model: DatabaseModel): ModelView {
       submittedById: version.submittedById,
       reviewNote: version.reviewNote,
       publishedAt: version.publishedAt?.toISOString() ?? null,
+      updatedAt: version.updatedAt.toISOString(),
     })),
   };
 }

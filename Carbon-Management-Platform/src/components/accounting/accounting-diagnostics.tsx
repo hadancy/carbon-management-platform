@@ -1,13 +1,21 @@
 import { Alert, Button } from "antd";
-import type { FormInstance } from "antd";
 import type { CalculationDiagnostic } from "@/domain/calculation/pv";
+import type { ModelRow } from "@/domain/calculation/model-rows";
 import {
   ACCOUNTING_STAGE_LABELS,
   type AccountingInputs,
 } from "@/shared/accounting";
-import type { ModelContent } from "@/shared/models";
-import { modelRows } from "./model-rows";
 const labels: Record<string, string> = {
+  specification: "产品规格",
+  measurementUnit: "计量单位",
+  projectLocation: "项目地点",
+  collectionStart: "采集开始日期",
+  collectionEnd: "采集结束日期",
+  boundaryNote: "案例系统边界",
+  exclusionNote: "取舍与排除说明",
+  ruleVersionId: "规则版本",
+  region: "地域",
+  technology: "技术/设备类型",
   value: "活动量",
   unit: "活动单位",
   weight: "运输重量",
@@ -16,6 +24,12 @@ const labels: Record<string, string> = {
   distanceUnit: "距离单位",
   factorVersionId: "公用因子版本",
   evidence: "凭证说明",
+  evidenceAssetIds: "证据附件",
+  location: "发生地点",
+  process: "设备或工艺",
+  measurementMethod: "计量方法",
+  sourceType: "数据类型",
+  estimationMethod: "估算方法",
   reason: "零值或不适用原因",
   activityDate: "活动日期",
   state: "数据状态",
@@ -31,70 +45,119 @@ const labels: Record<string, string> = {
   transmissionMethod: "输配电方法",
   transmissionFallbackReason: "简化法使用理由",
 };
-export function AccountingDiagnostics({
-  problems,
-  content,
-  form,
-  onSection,
-}: {
-  problems: CalculationDiagnostic[];
-  content: ModelContent;
-  form: FormInstance<AccountingInputs>;
-  onSection: (section: string) => void;
-}) {
-  const rows = modelRows(content);
-  function location(path: string) {
-    const parts = path.split(".");
-    const index = Number(parts[1]);
-    const field = labels[parts.at(-1)!] ?? "数据完整性";
-    if (parts[0] === "lines") {
-      const row = rows[index] ?? rows.find((row) => row.id === parts[1]);
-      return `${row ? ACCOUNTING_STAGE_LABELS[row.stage as keyof typeof ACCOUNTING_STAGE_LABELS] + " / " + row.name : "生命周期活动数据"} / ${field}`;
-    }
-    if (parts[0] === "annualEnergy") {
-      const annual = form.getFieldValue("annualEnergy")?.[index];
-      return `运行年度 ${annual?.operatingYear ?? (Number.isFinite(index) ? index : "电量")} / ${field}`;
-    }
-    return labels[parts[0]] ?? "核算方法与基本信息";
+
+export function accountingSection(path: string) {
+  const root = path.split(".")[0];
+  return root === "lines"
+    ? "activities"
+    : root === "annualEnergy"
+      ? "energy"
+      : "method";
+}
+
+export function accountingIssueTarget(
+  problem: CalculationDiagnostic,
+  rows: readonly ModelRow[],
+  annual: AccountingInputs["annualEnergy"],
+) {
+  const [root, rowKey, field] = problem.path.split(".");
+  const index = Number(rowKey);
+  if (root === "lines") {
+    const rowIndex = Number.isInteger(index)
+      ? index
+      : rows.findIndex((row) => row.id === rowKey);
+    const row = rows[rowIndex];
+    const stage = row
+      ? ACCOUNTING_STAGE_LABELS[
+          row.stage as keyof typeof ACCOUNTING_STAGE_LABELS
+        ]
+      : undefined;
+    return {
+      label: [
+        stage,
+        row?.name ?? "生命周期活动数据",
+        labels[field] ?? "数据完整性",
+      ]
+        .filter(Boolean)
+        .join(" / "),
+      name: row
+        ? [
+            root,
+            rowIndex,
+            field ??
+              (problem.code === "INVALID_TRANSPORT" ? "weight" : "state"),
+          ]
+        : undefined,
+    };
   }
+  if (root === "annualEnergy") {
+    const byYear =
+      problem.code === "MISSING_YEAR" || problem.code === "PERIOD_GAP";
+    const row = byYear ? undefined : annual[index];
+    const year = row?.operatingYear ?? (byYear ? index : undefined);
+    return {
+      label:
+        year === undefined
+          ? "运行年度电量"
+          : `运行年度 ${year} / ${labels[field] ?? "电量和期间"}`,
+      name: [root],
+      annualEdit: row
+        ? {
+            index,
+            field:
+              field ??
+              (problem.code === "MISSING_EVIDENCE"
+                ? "evidence"
+                : "operatingYear"),
+          }
+        : undefined,
+    };
+  }
+  return {
+    label: labels[root] ?? "核算方法与基本信息",
+    name: labels[root] ? [root] : undefined,
+  };
+}
+
+type IssueListProps = {
+  problems: CalculationDiagnostic[];
+  rows: readonly ModelRow[];
+  annual: AccountingInputs["annualEnergy"];
+  onIssue: (problem: CalculationDiagnostic) => void;
+};
+
+export function AccountingIssueList({
+  problems,
+  rows,
+  annual,
+  onIssue,
+}: IssueListProps) {
+  return (
+    <ul className="m-0 space-y-1 pl-4">
+      {problems.map((problem, index) => (
+        <li key={index} className="break-words">
+          <Button
+            type="link"
+            className="!h-auto !whitespace-normal !p-0 !text-left"
+            onClick={() => onIssue(problem)}
+          >
+            {accountingIssueTarget(problem, rows, annual).label}
+          </Button>
+          {" · "}
+          {problem.message}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function AccountingDiagnostics(props: IssueListProps) {
   return (
     <Alert
       type="error"
       showIcon
       title="请修正以下数据"
-      description={
-        <ul className="m-0 space-y-1 pl-4">
-          {problems.map((problem, index) => (
-            <li key={index}>
-              <Button
-                type="link"
-                className="!h-auto !whitespace-normal !p-0 !text-left"
-                onClick={() => {
-                  const parts = problem.path
-                    .split(".")
-                    .map((part) => (/^\d+$/.test(part) ? Number(part) : part));
-                  onSection(
-                    parts[0] === "lines"
-                      ? "activities"
-                      : parts[0] === "annualEnergy"
-                        ? "energy"
-                        : "method",
-                  );
-                  requestAnimationFrame(() =>
-                    form.scrollToField(
-                      parts[0] === "annualEnergy" ? ["annualEnergy"] : parts,
-                      { focus: true, block: "center" },
-                    ),
-                  );
-                }}
-              >
-                {location(problem.path)}
-              </Button>
-              ：{problem.message}。{problem.suggestion}
-            </li>
-          ))}
-        </ul>
-      }
+      description={<AccountingIssueList {...props} />}
     />
   );
 }

@@ -21,7 +21,7 @@ export function AccountingList({
   const router = useRouter();
   const { message } = App.useApp();
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState(canReview ? "SUBMITTED" : "ALL");
+  const [status, setStatus] = useState("ALL");
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const filtered = cases.filter(

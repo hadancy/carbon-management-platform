@@ -3,31 +3,37 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { App, Form } from "antd";
 import { createUuid } from "@/lib/uuid";
-import type { AccountingInputs } from "@/shared/accounting";
-import type { CalculationDiagnostic } from "@/domain/calculation/pv";
+import {
+  diagnostic,
+  type CalculationDiagnostic,
+} from "@/domain/calculation/pv-contract";
 import { adminRequest } from "@/components/admin/api";
 import { useUnsavedChangesWarning } from "@/components/backend/use-unsaved-changes-warning";
-import type { CaseView, RunView } from "./types";
+import type { AccountingFormValues, CaseView, RunView } from "./types";
 
 export function useAccountingActions(
   entry: CaseView,
   canWrite: boolean,
   canReview: boolean,
   currentUserId: string,
-  onInvalidField: (name: string) => void,
+  onInvalidField: (name: (string | number)[]) => void,
+  getProductionIssues: (
+    values: AccountingFormValues,
+  ) => CalculationDiagnostic[],
 ) {
   const router = useRouter();
   const { message } = App.useApp();
   const revision = entry.revisions.find(
     (item) => item.id === entry.currentRevisionId,
   )!;
-  const [form] = Form.useForm<AccountingInputs>();
-  const [ruleVersionId, setRuleVersionId] = useState<string | null>(
-    revision.ruleVersionId,
-  );
+  const [form] = Form.useForm<AccountingFormValues>();
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [diagnostics, setDiagnostics] = useState<CalculationDiagnostic[]>([]);
+  const [productionErrors, setProductionErrors] = useState<
+    CalculationDiagnostic[]
+  >([]);
+  const [productionCheckOpen, setProductionCheckOpen] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(
     revision.runs[0]?.id ?? null,
   );
@@ -50,6 +56,49 @@ export function useAccountingActions(
       run.mode === "PRODUCTION" && run.inputRevision === revision.inputRevision,
   );
   useUnsavedChangesWarning(editable && dirty);
+  function markDirty() {
+    setDirty(true);
+    setProductionErrors((previous) => (previous.length ? [] : previous));
+  }
+  async function productionFieldErrors() {
+    try {
+      await form.validateFields({ validateOnly: true });
+      return [];
+    } catch (error) {
+      const fields = (
+        error as {
+          errorFields?: { name: (string | number)[]; errors: string[] }[];
+        }
+      ).errorFields;
+      return fields?.length
+        ? fields.map(({ name, errors }) =>
+            diagnostic(
+              name.join("."),
+              "PRODUCTION",
+              "FORM_FIELD",
+              errors.join("；"),
+              "",
+            ),
+          )
+        : [
+            diagnostic(
+              "form",
+              "PRODUCTION",
+              "FORM_FIELD",
+              "输入已变化，请重新检查",
+              "",
+            ),
+          ];
+    }
+  }
+  async function openProductionCheck() {
+    setProductionCheckOpen(true);
+    const fields = await productionFieldErrors();
+    setProductionErrors((previous) => [
+      ...previous.filter((issue) => issue.code !== "FORM_FIELD"),
+      ...fields,
+    ]);
+  }
   async function complete() {
     try {
       await form.validateFields();
@@ -57,12 +106,7 @@ export function useAccountingActions(
     } catch (error) {
       const first = (error as { errorFields?: { name: (string | number)[] }[] })
         .errorFields?.[0]?.name;
-      if (first) {
-        onInvalidField(String(first[0]));
-        requestAnimationFrame(() =>
-          form.scrollToField(first, { focus: true, block: "center" }),
-        );
-      }
+      if (first) onInvalidField(first);
       message.warning("请先修正页面标记的数据项");
       return false;
     }
@@ -71,14 +115,16 @@ export function useAccountingActions(
     if (!editable || busy) return;
     setBusy(true);
     try {
+      const { ruleVersionId, ...inputs } = form.getFieldsValue(true);
       await adminRequest(`/api/accounting/cases/${entry.id}`, "PATCH", {
         expectedInputRevision: revision.inputRevision,
-        ruleVersionId,
-        inputs: form.getFieldsValue(true),
+        ruleVersionId: ruleVersionId ?? null,
+        inputs,
       });
       message.success("草稿已保存，请对当前输入重新计算");
       setDirty(false);
       setDiagnostics([]);
+      setProductionErrors([]);
       router.refresh();
     } catch (error) {
       message.error(error instanceof Error ? error.message : "保存失败");
@@ -88,11 +134,22 @@ export function useAccountingActions(
   }
   async function calculate(mode: "TRIAL" | "PRODUCTION") {
     if (busy || !editable) return;
+    if (mode === "PRODUCTION") {
+      const fields = await productionFieldErrors();
+      if (
+        fields.length ||
+        getProductionIssues(form.getFieldsValue(true)).length
+      ) {
+        setProductionErrors(fields);
+        setProductionCheckOpen(true);
+        return;
+      }
+    }
     if (dirty) {
       message.warning("请先保存输入，再计算");
       return;
     }
-    if (!(await complete())) return;
+    if (mode === "TRIAL" && !(await complete())) return;
     setBusy(true);
     try {
       const response = await fetch(`/api/accounting/cases/${entry.id}/runs`, {
@@ -105,13 +162,19 @@ export function useAccountingActions(
         diagnostics: CalculationDiagnostic[];
         error?: string;
       };
-      if (response.status === 422) {
-        setDiagnostics(data.diagnostics);
-        message.warning("请修正计算诊断中的数据");
+      if (Array.isArray(data.diagnostics) && data.diagnostics.length) {
+        if (mode === "PRODUCTION") {
+          setProductionErrors(data.diagnostics);
+          setProductionCheckOpen(true);
+        } else {
+          setDiagnostics(data.diagnostics);
+          message.warning("请修正计算诊断中的数据");
+        }
         return;
       }
       if (!response.ok || !data.run) throw Error(data.error || "计算失败");
       setDiagnostics([]);
+      setProductionErrors([]);
       setSelectedRunId(data.run.id);
       message.success(mode === "TRIAL" ? "试算完成" : "正式计算完成");
       router.refresh();
@@ -163,12 +226,14 @@ export function useAccountingActions(
   return {
     form,
     revision,
-    ruleVersionId,
-    setRuleVersionId,
     dirty,
-    setDirty,
+    markDirty,
     busy,
     diagnostics,
+    productionErrors,
+    productionCheckOpen,
+    openProductionCheck,
+    closeProductionCheck: () => setProductionCheckOpen(false),
     selectedRunId,
     setSelectedRunId,
     viewedRevision,

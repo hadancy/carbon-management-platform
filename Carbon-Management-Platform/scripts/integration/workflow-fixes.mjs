@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -263,9 +263,10 @@ export async function verifyWorkflowFixes({
   ).case;
   const inputs = {
     ...production.run.snapshots.inputs,
-    lines: production.run.snapshots.inputs.lines.map((line) => ({
+    lines: production.run.snapshots.inputs.lines.map((line, index) => ({
       ...line,
       factorVersionId: undefined,
+      evidenceAssetIds: index === 0 ? [] : line.evidenceAssetIds,
     })),
   };
   await expectStatus(`/api/accounting/cases/${own.id}`, 200, {
@@ -273,6 +274,39 @@ export async function verifyWorkflowFixes({
     cookie: schoolCookie,
     body: { expectedInputRevision: 1, ruleVersionId: null, inputs },
   });
+  const draftDb = new pg.Client({ connectionString: databaseUrl });
+  await draftDb.connect();
+  try {
+    const legacyDraft = await draftDb.query(
+      `UPDATE "AccountingRevision"
+       SET inputs = inputs #- '{annualEnergy,2,evidenceAssetIds}'
+       WHERE id = $1`,
+      [own.currentRevisionId],
+    );
+    assert.equal(legacyDraft.rowCount, 1);
+  } finally {
+    await draftDb.end();
+  }
+  const blocked = await expectStatus(
+    `/api/accounting/cases/${own.id}/runs`,
+    400,
+    {
+      method: "POST",
+      cookie: schoolCookie,
+      body: { requestId: randomUUID(), mode: "PRODUCTION" },
+    },
+  );
+  assert.equal(blocked.run, null);
+  for (const path of [
+    "ruleVersionId",
+    "lines.0.factorVersionId",
+    "lines.0.evidenceAssetIds",
+    "annualEnergy.2.evidenceAssetIds",
+  ])
+    assert.ok(
+      blocked.diagnostics.some((problem) => problem.path === path),
+      path,
+    );
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
     viewport: { width: 1440, height: 1000 },
@@ -340,12 +374,105 @@ export async function verifyWorkflowFixes({
       fullPage: true,
     });
     await openAs(schoolCookie, `/accounting/${own.id}`);
+    const checklist = page.getByRole("dialog", { name: /^正式计算检查/ });
+    const inspect = page.getByRole("button", { name: /^正式计算检查/ });
+    await page.getByRole("button", { name: "正式计算", exact: true }).click();
+    await checklist
+      .getByRole("button", { name: "规则版本", exact: true })
+      .waitFor();
+    await checklist
+      .getByRole("button", { name: /公用因子版本/ })
+      .first()
+      .waitFor();
+    await checklist
+      .getByRole("button", { name: /证据附件/ })
+      .first()
+      .waitFor();
+    await checklist
+      .getByRole("button", { name: /^运输 .*公用因子版本$/ })
+      .click();
+    await checklist.waitFor({ state: "hidden" });
+    await page.waitForFunction(
+      () => document.activeElement?.id === "lines_1_factorVersionId",
+    );
+    const activities = page.getByRole("tabpanel", {
+      name: "生命周期活动数据",
+      exact: true,
+    });
+    const materials = activities.getByRole("tab", { name: /^原材料及设备/ });
+    const transport = activities.getByRole("tab", { name: /^运输/ });
+    const materialValue = page.locator("#lines_0_value");
+    assert.equal(await transport.getAttribute("aria-selected"), "true");
+    assert.equal(await materialValue.isVisible(), false);
+    await materials.click();
+    await materialValue.fill("123.456");
+    await transport.click();
+    await page.locator("#lines_1_weight").waitFor();
+    assert.equal(await materialValue.isVisible(), false);
+    await materials.click();
+    await materialValue.waitFor();
+    assert.equal(await materialValue.inputValue(), "123.456");
+    await materialValue.fill(inputs.lines[0].value);
+    await transport.click();
+    const factorPicker = page.locator("#lines_1_factorVersionId");
+    const candidates = page.locator(".ant-select-dropdown:visible");
+    await factorPicker.click();
+    await candidates.getByText("日期匹配", { exact: true }).first().waitFor();
+    await candidates
+      .getByText(/^适用期 \d{4}-\d{2}-\d{2} 至 /)
+      .first()
+      .waitFor();
+    await factorPicker.press("Escape");
+    const activityDate = page.locator("#lines_1_activityDate");
+    await activityDate.fill("1901-01-01");
+    await activityDate.press("Tab");
+    await factorPicker.click();
+    await candidates
+      .getByText("日期超出适用期", { exact: true })
+      .first()
+      .waitFor();
+    await factorPicker.press("Escape");
+    await activityDate.fill(inputs.lines[1].activityDate);
+    await activityDate.press("Tab");
+
+    await inspect.click();
+    await checklist
+      .getByRole("button", { name: "运行年度 3 / 证据附件", exact: true })
+      .click();
+    await checklist.waitFor({ state: "hidden" });
+    const yearDialog = page.getByRole("dialog", { name: "编辑运行年度" });
+    await yearDialog.getByLabel("证据附件", { exact: true }).waitFor();
+    await page.waitForFunction(
+      () => document.activeElement?.id === "evidenceAssetIds",
+    );
+    await yearDialog.getByRole("button", { name: /^取\s*消$/ }).click();
+    await yearDialog.waitFor({ state: "hidden" });
+    await inspect.click();
+    await checklist
+      .getByRole("button", { name: "规则版本", exact: true })
+      .click();
+    await checklist.waitFor({ state: "hidden" });
+    await page.waitForFunction(
+      () => document.activeElement?.id === "ruleVersionId",
+    );
+
     await page.getByRole("tab", { name: "运行年度电量", exact: true }).click();
     await page.getByText("25 个年度 / 设计 25 年", { exact: true }).waitFor();
     assert.ok(
       (await page.locator("input").count()) < 150,
       "25 years must not mount 25 annual forms",
     );
+    const editYear = page.getByRole("button", { name: /^编\s*辑$/ });
+    const applyYear = yearDialog.getByRole("button", { name: "应用到草稿" });
+    await editYear.nth(2).click();
+    await yearDialog.getByLabel("上网电量", { exact: true }).fill("4100");
+    await applyYear.click();
+    await yearDialog.waitFor({ state: "hidden" });
+    await page.getByRole("cell", { name: "4100 kWh", exact: true }).waitFor();
+    await editYear.nth(1).click();
+    await yearDialog.getByRole("button", { name: "移除引用" }).waitFor();
+    await applyYear.click();
+    await yearDialog.waitFor({ state: "hidden" });
     await page
       .getByRole("button", { name: /^移\s*除$/ })
       .first()
@@ -392,15 +519,78 @@ export async function verifyWorkflowFixes({
       stored.annualEnergy.find((row) => row.operatingYear === 2),
       inputs.annualEnergy[1],
     );
+    assert.deepEqual(
+      stored.annualEnergy.find((row) => row.operatingYear === 3),
+      { ...inputs.annualEnergy[2], value: "4100", evidenceAssetIds: [] },
+    );
     await page
       .getByText("草稿已保存，请对当前输入重新计算", { exact: true })
       .waitFor({ state: "hidden" });
+    const sharedAsset = production.run.snapshots.assets.find(
+      (item) => item.id === inputs.annualEnergy[1].evidenceAssetIds[0],
+    );
+    assert.ok(sharedAsset);
+    await page
+      .getByRole("button", { name: "批量关联凭证", exact: true })
+      .click();
+    const batch = page.getByRole("dialog", {
+      name: "批量关联凭证",
+      exact: true,
+    });
+    const targets = batch.getByLabel("关联记录", { exact: true });
+    await targets.click();
+    await candidates
+      .locator(".ant-select-item-option-content")
+      .filter({ hasText: `原材料及设备 / ${firstName}` })
+      .click();
+    await targets.fill("第 3 运行年");
+    await candidates
+      .locator(".ant-select-item-option-content")
+      .filter({ hasText: /^第 3 运行年（/ })
+      .click();
+    await targets.press("Escape");
+    await batch.getByLabel("共用凭证", { exact: true }).click();
+    await page
+      .locator(".ant-select-dropdown:visible")
+      .getByText(sharedAsset.name, { exact: true })
+      .filter({ visible: true })
+      .click();
+    await batch
+      .getByRole("button", { name: "关联到所选记录", exact: true })
+      .click();
+    await page
+      .getByText("已关联到 2 条记录，请保存草稿", { exact: true })
+      .waitFor();
+    await page.getByRole("button", { name: /保存草稿$/ }).click();
+    await page
+      .getByText("草稿已保存，请对当前输入重新计算", { exact: true })
+      .waitFor();
+    const afterBatch = (
+      await expectStatus(`/api/accounting/cases/${own.id}`, 200, {
+        cookie: schoolCookie,
+      })
+    ).case.revisions[0].inputs;
+    assert.deepEqual(afterBatch.lines[0].evidenceAssetIds, [sharedAsset.id]);
+    assert.deepEqual(
+      afterBatch.annualEnergy.find((row) => row.operatingYear === 3)
+        .evidenceAssetIds,
+      [sharedAsset.id],
+    );
+    assert.deepEqual(
+      afterBatch.annualEnergy.find((row) => row.operatingYear === 2),
+      inputs.annualEnergy[1],
+    );
     assert.equal(
       await page
         .getByRole("tab", { name: "运行年度电量", exact: true })
         .getAttribute("aria-selected"),
       "true",
       "Saving must retain the annual-energy section",
+    );
+    assert.equal(
+      new URL(page.url()).searchParams.get("activity"),
+      inputs.lines[1].itemId,
+      "Saving must retain the selected activity",
     );
     await page.screenshot({
       path: join(artifacts, "annual-energy-compact.png"),
@@ -443,6 +633,10 @@ export async function verifyWorkflowFixes({
     await page.reload();
     await page.getByRole("button", { name: /^试\s*算$/ }).click();
     await page.getByText(/^请选择可换算为 .* 的单位$/).waitFor();
+    await page.waitForFunction(
+      () => document.activeElement?.id === "lines_0_unit",
+    );
+    assert.equal(await materials.getAttribute("aria-selected"), "true");
     assert.equal(
       await page
         .getByRole("tab", { name: "生命周期活动数据", exact: true })
@@ -450,19 +644,23 @@ export async function verifyWorkflowFixes({
       "true",
     );
     await openAs(reviewerCookie, "/accounting");
-    await page.getByText("待审核案例", { exact: true }).waitFor();
-    assert.ok(
-      (
-        await page
-          .getByLabel("核算状态")
-          .evaluate((element) => element.closest(".ant-select").innerText)
-      ).includes("待审核"),
-    );
+    const statusSelect = page
+      .locator(".ant-select")
+      .filter({ has: page.getByLabel("核算状态") });
+    const draftCase = page.getByRole("link", {
+      name: "SYN_FIXES_UI",
+      exact: true,
+    });
+    await statusSelect.getByText("全部状态", { exact: true }).waitFor();
+    await draftCase.waitFor();
+    await page.getByRole("button", { name: "待审核案例", exact: true }).click();
+    await statusSelect.getByText("待审核", { exact: true }).waitFor();
+    await draftCase.waitFor({ state: "hidden" });
     await page.getByRole("button", { name: "重置筛选", exact: true }).click();
+    await statusSelect.getByText("全部状态", { exact: true }).waitFor();
+    await draftCase.waitFor();
     await page.getByPlaceholder("搜索案例编码或项目名称").fill("SYN_FIXES_UI");
-    await page
-      .getByRole("link", { name: "SYN_FIXES_UI", exact: true })
-      .waitFor();
+    await draftCase.waitFor();
     assert.deepEqual(errors, []);
   } catch (error) {
     await page.screenshot({
@@ -492,8 +690,11 @@ export async function verifyWorkflowFixes({
       "模板篡改摘要拦截",
       "无效 ID 与跨校页面返回 404",
       "25 年紧凑表格、批量补齐及保存",
+      "缺少附件列表的年度可保存，已有附件保留",
+      "活动按阶段切换、草稿保留和试算缺项定位",
+      "正式计算缺项同时返回并能跳转，因子匹配随活动日期更新，活动与年度可批量关联凭证",
       "390 像素页面无横向溢出",
-      "审核角色待办与搜索",
+      "审核角色默认全部状态、待审核筛选与搜索",
       "长标题无孤字行",
     ],
   };

@@ -47,17 +47,24 @@ export async function listDataItems(
     throw new RequestError("无数据项管理权限", 403);
   const query = dataItemListQuerySchema.parse(input);
   const list = await queryDataItems(query);
-  const counts = await dataItemUsageCounts(
-    db,
-    list.entries.map((entry) => entry.id),
-  );
   return {
     ...list,
-    entries: list.entries.map((entry) => ({
-      ...entry,
-      referenceCount: counts.get(entry.id) ?? 0,
-    })),
+    entries: await withDataItemReferenceCounts(db, list.entries),
   };
+}
+
+export async function withDataItemReferenceCounts(
+  client: Pick<Prisma.TransactionClient, "$queryRaw">,
+  entries: DataItemEntry[],
+) {
+  const counts = await dataItemUsageCounts(
+    client,
+    entries.map(({ id }) => id),
+  );
+  return entries.map((entry) => ({
+    ...entry,
+    referenceCount: counts.get(entry.id) ?? 0,
+  }));
 }
 
 export async function listPublishedDataItems(
@@ -74,8 +81,10 @@ export async function listPublishedDataItems(
   return queryDataItems({ ...query, status: "PUBLISHED" });
 }
 
-async function queryDataItems(query: DataItemListQuery) {
-  const where: Prisma.DataItemVersionWhereInput = {
+export function dataItemVersionFilter(
+  query: Pick<DataItemListQuery, "status" | "unit" | "q">,
+): Prisma.DataItemVersionWhereInput {
+  return {
     ...(query.status === "DRAFT" ? { status: "DRAFT" } : {}),
     ...(query.status === "PUBLISHED"
       ? { status: "PUBLISHED", retiredAt: null }
@@ -93,6 +102,10 @@ async function queryDataItems(query: DataItemListQuery) {
         }
       : {}),
   };
+}
+
+async function queryDataItems(query: DataItemListQuery) {
+  const where = dataItemVersionFilter(query);
   return db.$transaction(
     async (tx) => {
       const total = await tx.dataItemVersion.count({ where });

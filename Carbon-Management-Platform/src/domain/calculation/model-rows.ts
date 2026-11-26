@@ -25,3 +25,5 @@ export function modelRows(content: ModelContent) {
     ),
   );
 }
+
+export type ModelRow = ReturnType<typeof modelRows>[number];

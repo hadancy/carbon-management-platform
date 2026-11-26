@@ -10,7 +10,6 @@ import {
   Button,
   Divider,
   Form,
-  Input,
   Modal,
   Space,
   Tag,
@@ -28,6 +27,7 @@ import { ModelStructureEditor } from "./model-structure-editor";
 import { ModelBasicForm } from "./model-basic-form";
 import { ModelBoundaryDiagramField } from "./model-boundary-diagram-field";
 import { ModelCalculationProfile } from "./model-calculation-profile";
+import { ModelRejectDialog } from "./model-reject-dialog";
 import { synchronizePvProfile } from "@/shared/calculation-profile";
 import { useUnsavedChangesWarning } from "@/components/backend/use-unsaved-changes-warning";
 
@@ -38,6 +38,7 @@ export function ModelVersionEditor({
   canReview,
   currentUserId,
   backHref,
+  dataItemsToReview = [],
 }: {
   model: ModelView;
   version: ModelVersionView;
@@ -45,6 +46,7 @@ export function ModelVersionEditor({
   canReview: boolean;
   currentUserId: string;
   backHref: "/models" | "/admin/models";
+  dataItemsToReview?: string[];
 }) {
   const router = useRouter();
   const { message } = App.useApp();
@@ -54,10 +56,10 @@ export function ModelVersionEditor({
   const [savedContent, setSavedContent] = useState<ModelContent>(
     version.content,
   );
+  const [savedUpdatedAt, setSavedUpdatedAt] = useState(version.updatedAt);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [rejectOpen, setRejectOpen] = useState(false);
-  const [rejectNote, setRejectNote] = useState("");
   const [publishOpen, setPublishOpen] = useState(false);
   const [legacyConversions, setLegacyConversions] = useState(0);
   const editable =
@@ -75,13 +77,16 @@ export function ModelVersionEditor({
       : canReview && version.status === "SUBMITTED" && canSchoolReviewOwn;
 
   async function save(nextContent: ModelContent) {
-    const saved = await adminRequest<{ version: { content: ModelContent } }>(
-      `/api/model-versions/${version.id}`,
-      "PATCH",
-      nextContent,
-    );
+    const saved = await adminRequest<{
+      version: { content: ModelContent; updatedAt: string };
+    }>(`/api/model-versions/${version.id}`, "PATCH", {
+      ...nextContent,
+      expectedUpdatedAt: savedUpdatedAt,
+    });
     setContent(saved.version.content);
     setSavedContent(structuredClone(saved.version.content));
+    setSavedUpdatedAt(saved.version.updatedAt);
+    return saved.version.updatedAt;
   }
 
   async function validateForRelease() {
@@ -126,23 +131,24 @@ export function ModelVersionEditor({
       const normalized = await validateForRelease();
       if (!normalized) {
         if (action === "publish") setPublishOpen(false);
-        return;
+        return false;
       }
       nextContent = normalized.content;
     }
     setBusy(true);
     try {
+      let expectedUpdatedAt = savedUpdatedAt;
       if (
         editable &&
         (action === "save" ||
           JSON.stringify(nextContent) !== JSON.stringify(savedContent))
       )
-        await save(nextContent);
+        expectedUpdatedAt = await save(nextContent);
       if (action !== "save") {
         await adminRequest(
           `/api/model-versions/${version.id}/transition`,
           "POST",
-          { action, note },
+          { action, note, expectedUpdatedAt },
         );
       }
       message.success(
@@ -157,8 +163,10 @@ export function ModelVersionEditor({
       if (action === "publish") setPublishOpen(false);
       if (action === "save") router.refresh();
       else router.push(backHref);
+      return true;
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "操作失败");
+      return false;
     } finally {
       setBusy(false);
     }
@@ -186,7 +194,11 @@ export function ModelVersionEditor({
         </div>
         <Space wrap>
           {editable && (
-            <Button loading={busy} onClick={() => void act("save")}>
+            <Button
+              aria-label="保存草稿"
+              loading={busy}
+              onClick={() => void act("save")}
+            >
               保存草稿
             </Button>
           )}
@@ -212,7 +224,14 @@ export function ModelVersionEditor({
             canReview &&
             version.status === "SUBMITTED" &&
             canSchoolReviewOwn && (
-              <Button danger loading={busy} onClick={() => setRejectOpen(true)}>
+              <Button
+                danger
+                loading={busy}
+                onClick={() => {
+                  setError("");
+                  setRejectOpen(true);
+                }}
+              >
                 驳回
               </Button>
             )}
@@ -220,6 +239,13 @@ export function ModelVersionEditor({
       </div>
       <div className="space-y-4">
         {error && <Alert type="error" title={error} />}
+        {editable && dataItemsToReview.length > 0 && (
+          <Alert
+            type="warning"
+            title="部分公共数据项已有新版本"
+            description={`请核对单位和来源资料，使用数据项旁的「更换」选用新版后再${model.scope === "PUBLIC" ? "发布" : "提交审核"}。涉及 ${dataItemsToReview.join("、")}`}
+          />
+        )}
         {version.reviewNote && (
           <Alert
             type="warning"
@@ -317,26 +343,13 @@ export function ModelVersionEditor({
           }
         />
       </Modal>
-      <Modal
-        title="驳回模型版本"
+      <ModelRejectDialog
         open={rejectOpen}
+        busy={busy}
+        error={error}
         onCancel={() => setRejectOpen(false)}
-        onOk={() => {
-          if (rejectNote.trim()) {
-            setRejectOpen(false);
-            void act("reject", rejectNote);
-          }
-        }}
-        okText="确认驳回"
-      >
-        <Input.TextArea
-          value={rejectNote}
-          onChange={(e) => setRejectNote(e.target.value)}
-          maxLength={2000}
-          rows={4}
-          placeholder="请填写需要修改的内容"
-        />
-      </Modal>
+        onReject={(note) => act("reject", note)}
+      />
     </div>
   );
 }

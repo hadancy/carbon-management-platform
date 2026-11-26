@@ -73,7 +73,7 @@ export function DataItemDialog({
     >
       <Typography.Paragraph type="secondary" className="mb-4 text-xs">
         {publish
-          ? "发布后内容只读，可在后续创建新版本维护。"
+          ? "发布后同步关联模型。系统会删除从未被引用的旧版并记录审计，曾被引用的旧版停用后保留供追溯。"
           : editor.mode === "new-version"
             ? `基于 ${entry?.code} v${entry?.version} 创建，保存后自动分配下一版本号。`
             : "可先保存未完成草稿；发布前需填写数据名称并选择活动数据单位。"}

@@ -7,6 +7,7 @@ import { errorResponse } from "@/server/http/response";
 const inputSchema = z.object({
   action: z.enum(["submit", "publish", "reject"]),
   note: z.string().trim().max(2000).optional(),
+  expectedUpdatedAt: z.iso.datetime().optional(),
 });
 
 export async function POST(

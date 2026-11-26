@@ -84,7 +84,7 @@ export function DataItemPickerTable({
         total,
         showSizeChanger: true,
         pageSizeOptions: [10, 20, 50],
-        showTotal: (count) => `共 ${count} 个可用版本`,
+        showTotal: (count) => `共 ${count} 个可用数据项`,
         onChange: onPage,
       }}
       expandable={{

@@ -22,6 +22,15 @@ export async function POST(
       input.requestId,
       input.mode,
     );
+    if (outcome.preflightError)
+      return Response.json(
+        {
+          run: null,
+          error: outcome.preflightError,
+          diagnostics: outcome.diagnostics,
+        },
+        { status: 400 },
+      );
     return Response.json(outcome, { status: outcome.run ? 201 : 422 });
   } catch (error) {
     return errorResponse(error);

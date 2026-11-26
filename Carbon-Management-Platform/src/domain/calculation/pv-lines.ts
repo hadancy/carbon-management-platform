@@ -109,7 +109,7 @@ export function calculatePvLines(
         mode: input.mode,
       },
     );
-    if (selected.problem)
+    if (selected.problem && selected.problem.code !== "FACTOR_DATE_REQUIRED")
       issues.push(
         diagnostic(
           `${path}.factorVersionId`,

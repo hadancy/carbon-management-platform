@@ -8,6 +8,13 @@ import { RequestError } from "@/server/http/response";
 import { canSchool } from "@/shared/permissions";
 import { resolveModelDataItems } from "./data-items";
 import { recordModelDataItemUsage } from "@/server/data-items/usage";
+import { createModelDraft, lockModelVersionWrites } from "./draft-versions";
+import {
+  findNewerModelDataItems,
+  prepareSchoolTemplateCopy,
+  upgradeModelDataItems,
+  upgradeModelVersionDataItems,
+} from "./data-item-upgrades";
 import {
   emptyModelContent,
   modelContentSchema,
@@ -127,9 +134,12 @@ export async function createModel(
   }
   try {
     return await db.$transaction(async (tx) => {
+      const draftContent = input.sourceVersionId
+        ? await prepareSchoolTemplateCopy(tx, content)
+        : content;
       const resolvedContent = await resolveModelDataItems(
         tx,
-        content,
+        draftContent,
         input.sourceVersionId ? content : undefined,
       );
       const model = await tx.footprintModel.create({
@@ -185,6 +195,7 @@ export async function saveModelVersion(
   context: SchoolContext | null,
   id: string,
   content: ModelContent,
+  expectedUpdatedAt?: string,
 ) {
   const entry = await requireVersionAccess(id, principal, context);
   requireScopeWrite(
@@ -195,12 +206,14 @@ export async function saveModelVersion(
   );
   if (entry.status !== "DRAFT" && entry.status !== "REJECTED")
     throw new RequestError("只有草稿或被驳回的版本可以编辑", 409);
+  requireCurrentVersion(entry.updatedAt, expectedUpdatedAt);
   return db.$transaction(async (tx) => {
     const resolvedContent = await resolveModelDataItems(
       tx,
       content,
       modelContentSchema.parse(entry.content),
     );
+    await lockModelVersionWrites(tx, entry.modelId);
     const result = await tx.modelVersion.updateMany({
       where: {
         id,
@@ -230,11 +243,20 @@ export async function saveModelVersion(
   });
 }
 
+function requireCurrentVersion(updatedAt: Date, expectedUpdatedAt?: string) {
+  if (expectedUpdatedAt && updatedAt.toISOString() !== expectedUpdatedAt)
+    throw new RequestError("模型已更新，请刷新页面并核对最新内容", 409);
+}
+
 export async function transitionModelVersion(
   principal: Principal,
   context: SchoolContext | null,
   id: string,
-  input: { action: "submit" | "publish" | "reject"; note?: string },
+  input: {
+    action: "submit" | "publish" | "reject";
+    note?: string;
+    expectedUpdatedAt?: string;
+  },
 ) {
   const entry = await requireVersionAccess(id, principal, context);
   const isPublic = entry.model.scope === "PUBLIC";
@@ -267,6 +289,7 @@ export async function transitionModelVersion(
   }
   if (input.action === "reject" && !input.note?.trim())
     throw new RequestError("请填写驳回原因", 400);
+  requireCurrentVersion(entry.updatedAt, input.expectedUpdatedAt);
   const normalizedContent =
     input.action === "reject"
       ? null
@@ -277,6 +300,16 @@ export async function transitionModelVersion(
     if (problem) throw new RequestError(problem, 400);
   }
   return db.$transaction(async (tx) => {
+    await lockModelVersionWrites(tx, entry.modelId);
+    if ((isPublic || input.action === "submit") && normalizedContent) {
+      const newer = await findNewerModelDataItems(tx, normalizedContent);
+      const first = newer.values().next().value;
+      if (first)
+        throw new RequestError(
+          `数据项「${first.code}」已有 v${first.version}，请核对并更换后${isPublic ? "发布模板" : "提交审核"}`,
+          409,
+        );
+    }
     const result = await tx.modelVersion.updateMany({
       where: {
         id,
@@ -321,7 +354,22 @@ export async function transitionModelVersion(
         note: input.note ?? null,
       },
     });
-    return tx.modelVersion.findUniqueOrThrow({ where: { id } });
+    const version = await tx.modelVersion.findUniqueOrThrow({ where: { id } });
+    if (entry.status !== "SUBMITTED") return version;
+    const replacements = await findNewerModelDataItems(
+      tx,
+      modelContentSchema.parse(version.content),
+    );
+    if (!replacements.size) return version;
+    const change = await upgradeModelVersionDataItems(tx, {
+      model: entry.model,
+      version,
+      replacements,
+      actorId: principal.userId,
+    });
+    return version.status === "REJECTED" && change?.updated
+      ? tx.modelVersion.findUniqueOrThrow({ where: { id } })
+      : version;
   });
 }
 
@@ -330,10 +378,7 @@ export async function createNextModelVersion(
   context: SchoolContext | null,
   modelId: string,
 ) {
-  const model = await db.footprintModel.findUnique({
-    where: { id: modelId },
-    include: { versions: { orderBy: { version: "desc" }, take: 1 } },
-  });
+  const model = await db.footprintModel.findUnique({ where: { id: modelId } });
   if (
     !model ||
     model.archivedAt ||
@@ -341,32 +386,25 @@ export async function createNextModelVersion(
   )
     throw new RequestError("模型不存在", 404);
   requireScopeWrite(model.scope, model.schoolId, principal, context);
-  const latest = model.versions[0];
-  if (!latest || latest.status !== "PUBLISHED")
-    throw new RequestError("请先完成当前版本的发布", 409);
   return db.$transaction(async (tx) => {
-    const version = await tx.modelVersion.create({
-      data: {
-        modelId,
-        version: latest.version + 1,
-        content: latest.content as Prisma.InputJsonValue,
-        createdById: principal.userId,
-        lastEditedById: principal.userId,
-      },
+    await lockModelVersionWrites(tx, modelId);
+    const latest = await tx.modelVersion.findFirst({
+      where: { modelId, model: { archivedAt: null } },
+      orderBy: { version: "desc" },
     });
-    await recordModelDataItemUsage(
-      tx,
-      version.id,
-      modelContentSchema.parse(latest.content),
-    );
-    await audit(tx, {
+    if (!latest || latest.status !== "PUBLISHED")
+      throw new RequestError("请先完成当前版本的发布", 409);
+    let content = latest.content as Prisma.InputJsonValue;
+    const previous = modelContentSchema.parse(latest.content);
+    const replacements = await findNewerModelDataItems(tx, previous);
+    if (replacements.size)
+      content = upgradeModelDataItems(previous, replacements, "new-draft")
+        .content as Prisma.InputJsonValue;
+    return createModelDraft(tx, {
+      model,
       actorId: principal.userId,
-      schoolId: model.schoolId ?? undefined,
-      action: "model.version.create",
-      targetType: "ModelVersion",
-      targetId: version.id,
-      details: { code: model.code, version: version.version },
+      version: latest.version + 1,
+      content,
     });
-    return version;
   });
 }

@@ -2,17 +2,15 @@ import type { AccountingInputs } from "@/shared/accounting";
 import type { ModelContent } from "@/shared/models";
 import type { PvCalculationResult } from "@/domain/calculation/pv";
 import type { CalculationFactor } from "@/shared/emission-factors";
+import type { FactorDetails } from "@/domain/calculation/factor-selection";
+import type { PvRulePeriod } from "@/shared/calculation-rule";
 
 export type ModelOption = { id: string; label: string };
-export type FactorOption = {
-  id: string;
-  label: string;
-  stage: string;
-  unit: string;
-  subject: string;
-  purpose: "TEST" | "PRODUCTION";
+export type FactorOption = FactorDetails & { id: string; label: string };
+export type RuleOption = PvRulePeriod & { id: string; label: string };
+export type AccountingFormValues = AccountingInputs & {
+  ruleVersionId?: string | null;
 };
-export type RuleOption = { id: string; label: string };
 export type EvidenceAsset = {
   id: string;
   name: string;

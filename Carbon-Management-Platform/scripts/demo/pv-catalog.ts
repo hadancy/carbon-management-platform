@@ -40,10 +40,10 @@ export async function ensureDemoModelCatalog(
         if (!sameDataItemFields(entry, item))
           throw new Error(`演示公共数据项编码内容冲突：${code}`);
         if (entry.status === "DRAFT")
-          entry = await publishDataItem(actor, entry.id, {
+          ({ entry } = await publishDataItem(actor, entry.id, {
             ...dataItemFields(item),
             revision: entry.revision,
-          });
+          }));
         if (entry.retiredAt) throw new Error(`演示公共数据项已停用：${code}`);
         category.items[i] = modelItemFromCatalog(
           toDataItemEntry(entry),

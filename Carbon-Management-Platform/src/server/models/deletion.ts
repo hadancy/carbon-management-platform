@@ -5,6 +5,7 @@ import { audit } from "@/server/admin/audit";
 import { db } from "@/server/db/client";
 import { RequestError } from "@/server/http/response";
 import { canSchool } from "@/shared/permissions";
+import { lockModelVersionWrites } from "./draft-versions";
 
 export async function deleteDraftModelVersion(
   principal: Principal,
@@ -32,6 +33,7 @@ export async function deleteDraftModelVersion(
     throw new RequestError("只能删除草稿或被驳回的版本", 409);
 
   return db.$transaction(async (tx) => {
+    await lockModelVersionWrites(tx, entry.modelId);
     const newerCount = await tx.modelVersion.count({
       where: { modelId: entry.modelId, version: { gt: entry.version } },
     });
@@ -96,6 +98,7 @@ export async function archiveModel(
   if (model.versions.some((version) => version.status !== "PUBLISHED"))
     throw new RequestError("请先处理未发布版本，再归档整个模型", 409);
   return db.$transaction(async (tx) => {
+    await lockModelVersionWrites(tx, id);
     const result = await tx.footprintModel.updateMany({
       where: {
         id,

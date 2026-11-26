@@ -21,9 +21,12 @@ import {
   attachCatalogItems,
   verifyModelDataItemReferences,
 } from "./integration/model-data-items.mjs";
+import { verifyModelDataItemUpgrades } from "./integration/model-data-item-upgrades.mjs";
 
-const localEnv = parse(readFileSync(new URL("../.env", import.meta.url)));
-const sourceUrl = new URL(localEnv.DATABASE_URL);
+const sourceUrl = new URL(
+  process.env.TEST_DATABASE_URL ??
+    parse(readFileSync(new URL("../.env", import.meta.url))).DATABASE_URL,
+);
 const databaseName = `carbon_stage3_${randomBytes(5).toString("hex")}`;
 const adminUrl = new URL(sourceUrl);
 adminUrl.pathname = "/postgres";
@@ -278,6 +281,15 @@ try {
   const editorCookie = await signIn(editorEmail);
   const schoolBCookie = await signIn(schoolBEmail);
   const schoolBReviewerCookie = await signIn(schoolBReviewerEmail);
+  await verifyModelDataItemUpgrades({
+    expectStatus,
+    adminCookie,
+    schoolCookie,
+    schoolBCookie,
+    reviewerCookie,
+    schoolBReviewerCookie,
+    databaseUrl: testUrl.toString(),
+  });
   await verifyModelDataItemReferences({
     expectStatus,
     baseURL,

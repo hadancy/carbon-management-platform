@@ -1,4 +1,4 @@
-import { modelRows } from "./model-rows";
+import { modelRows } from "@/domain/calculation/model-rows";
 import { ACCOUNTING_STAGE_LABELS } from "@/shared/accounting";
 import { factorUnitLabel, unitSymbol } from "@/shared/units";
 import type { RunView } from "./types";

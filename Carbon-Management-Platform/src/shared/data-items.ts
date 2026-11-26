@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isKnownUnit, isNumericFactor } from "./units";
+import { factorUnitLabel, isKnownUnit, isNumericFactor } from "./units";
 
 const optionalText = (max: number) => z.string().trim().max(max).default("");
 
@@ -74,6 +74,12 @@ export const dataItemCatalogQuerySchema = dataItemListQuerySchema
   .strict();
 export type DataItemCatalogQuery = z.infer<typeof dataItemCatalogQuerySchema>;
 
+export const dataItemHistoryQuerySchema = dataItemListQuerySchema
+  .pick({ page: true, pageSize: true })
+  .extend({ dataItemId: z.uuid() })
+  .strict();
+export type DataItemHistoryQuery = z.infer<typeof dataItemHistoryQuerySchema>;
+
 export const dataItemFieldNames = Object.keys(
   dataItemFieldsSchema.shape,
 ) as (keyof DataItemFields)[];
@@ -86,6 +92,16 @@ export function dataItemFields(value: DataItemFields): DataItemFields {
 
 export function sameDataItemFields(a: DataItemFields, b: DataItemFields) {
   return dataItemFieldNames.every((key) => a[key] === b[key]);
+}
+
+export function formatDataItemEmissionFactor({
+  emissionFactor,
+  functionalUnit,
+}: Pick<DataItemFields, "emissionFactor" | "functionalUnit">) {
+  if (!emissionFactor) return "—";
+  return functionalUnit
+    ? `${emissionFactor} ${factorUnitLabel(functionalUnit)}`
+    : `${emissionFactor}（单位待填写）`;
 }
 
 export type DataItemFields = z.infer<typeof dataItemFieldsSchema>;
@@ -115,9 +131,39 @@ export type AdminDataItemList = Omit<DataItemList, "entries"> & {
   entries: AdminDataItemEntry[];
 };
 
+export type AdminDataItemGroup = {
+  id: string;
+  code: string;
+  current: AdminDataItemEntry | null;
+  draft: AdminDataItemEntry | null;
+  latestRetired: AdminDataItemEntry | null;
+  historyCount: number;
+};
+
+export type AdminDataItemGroups = {
+  groups: AdminDataItemGroup[];
+  total: number;
+  query: DataItemListQuery;
+};
+
+export type AdminDataItemHistory = {
+  entries: AdminDataItemEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export type ModelDataItemChange = {
+  scope: "PUBLIC" | "SCHOOL";
+  createdDraft: boolean;
+  updated: number;
+  needsReview: number;
+  awaitingReview: boolean;
+};
+
 export const dataItemStatusOptions = [
   { value: "ALL", label: "全部状态" },
-  { value: "DRAFT", label: "草稿" },
-  { value: "PUBLISHED", label: "已发布" },
-  { value: "RETIRED", label: "已停用" },
+  { value: "DRAFT", label: "含草稿" },
+  { value: "PUBLISHED", label: "有发布版" },
+  { value: "RETIRED", label: "含历史版本" },
 ];

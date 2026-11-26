@@ -4,6 +4,7 @@ import type { Principal } from "@/server/auth/access";
 import { audit } from "@/server/admin/audit";
 import { db } from "@/server/db/client";
 import { RequestError } from "@/server/http/response";
+import { upgradeLinkedModels } from "@/server/models/data-item-upgrades";
 import {
   createDataItemSchema,
   dataItemFieldsSchema,
@@ -11,6 +12,8 @@ import {
   retireDataItemSchema,
   updateDataItemSchema,
 } from "@/shared/data-items";
+import { toDataItemEntry } from "./queries";
+import { deleteUnusedSupersededVersions } from "./deletion";
 
 function requireAdmin(principal: Principal) {
   if (!principal.isPlatformAdmin)
@@ -24,6 +27,43 @@ async function getVersion(tx: Prisma.TransactionClient, id: string) {
   });
   if (!entry) throw new RequestError("数据项版本不存在", 404);
   return entry;
+}
+
+async function retireSupersededVersions(
+  tx: Prisma.TransactionClient,
+  actorId: string,
+  entry: Awaited<ReturnType<typeof getVersion>>,
+  publishedAt: Date,
+) {
+  const reason = `已由 v${entry.version} 接替`;
+  const superseded = await tx.dataItemVersion.updateManyAndReturn({
+    where: {
+      dataItemId: entry.dataItemId,
+      version: { lt: entry.version },
+      status: "PUBLISHED",
+      retiredAt: null,
+    },
+    data: {
+      retiredAt: publishedAt,
+      retirementReason: reason,
+      revision: { increment: 1 },
+    },
+    select: { id: true, version: true },
+  });
+  for (const older of superseded)
+    await audit(tx, {
+      actorId,
+      action: "data-item.retire",
+      targetType: "DataItemVersion",
+      targetId: older.id,
+      details: {
+        dataItemId: entry.dataItemId,
+        code: entry.dataItem.code,
+        version: older.version,
+        reason,
+        replacedByVersionId: entry.id,
+      },
+    });
 }
 
 export async function createDataItem(principal: Principal, input: unknown) {
@@ -79,41 +119,69 @@ async function saveDraft(
       400,
     );
   const { revision, ...fields } = parsed.data;
-  return db.$transaction(async (tx) => {
-    const entry = await getVersion(tx, id);
-    if (entry.status !== "DRAFT")
-      throw new RequestError("已发布数据项内容只读，请创建新版本", 409);
-    const result = await tx.dataItemVersion.updateMany({
-      where: { id, status: "DRAFT", revision },
-      data: {
-        ...fields,
-        revision: { increment: 1 },
-        ...(publish ? { status: "PUBLISHED", publishedAt: new Date() } : {}),
-      },
-    });
-    if (!result.count)
-      throw new RequestError("数据项已被其他管理员修改，请刷新后重试", 409);
-    await audit(tx, {
-      actorId: principal.userId,
-      action: publish ? "data-item.publish" : "data-item.update",
-      targetType: "DataItemVersion",
-      targetId: id,
-      details: {
-        dataItemId: entry.dataItemId,
-        code: entry.dataItem.code,
-        version: entry.version,
-      },
-    });
-    return getVersion(tx, id);
-  });
+  return db.$transaction(
+    async (tx) => {
+      const entry = await getVersion(tx, id);
+      if (entry.status !== "DRAFT")
+        throw new RequestError("已发布数据项内容只读，请创建新版本", 409);
+      if (entry.revision !== revision)
+        throw new RequestError("数据项已被其他管理员修改，请刷新后重试", 409);
+      const publishedAt = publish ? new Date() : null;
+      if (publishedAt) {
+        await tx.$queryRaw`SELECT "id" FROM "DataItem" WHERE "id" = ${entry.dataItemId}::uuid FOR UPDATE`;
+        await retireSupersededVersions(
+          tx,
+          principal.userId,
+          entry,
+          publishedAt,
+        );
+      }
+      const result = await tx.dataItemVersion.updateMany({
+        where: { id, status: "DRAFT", revision },
+        data: {
+          ...fields,
+          revision: { increment: 1 },
+          ...(publishedAt ? { status: "PUBLISHED", publishedAt } : {}),
+        },
+      });
+      if (!result.count)
+        throw new RequestError("数据项已被其他管理员修改，请刷新后重试", 409);
+      await audit(tx, {
+        actorId: principal.userId,
+        action: publish ? "data-item.publish" : "data-item.update",
+        targetType: "DataItemVersion",
+        targetId: id,
+        details: {
+          dataItemId: entry.dataItemId,
+          code: entry.dataItem.code,
+          version: entry.version,
+        },
+      });
+      const saved = await getVersion(tx, id);
+      if (!publishedAt || entry.version === 1)
+        return { entry: saved, modelChanges: [], deletedVersions: [] };
+      const modelChanges = await upgradeLinkedModels(
+        tx,
+        principal.userId,
+        toDataItemEntry(saved),
+      );
+      const deletedVersions = await deleteUnusedSupersededVersions(
+        tx,
+        principal.userId,
+        saved,
+      );
+      return { entry: saved, modelChanges, deletedVersions };
+    },
+    publish ? { timeout: 30_000 } : undefined,
+  );
 }
 
-export function updateDataItem(
+export async function updateDataItem(
   principal: Principal,
   id: string,
   input: unknown,
 ) {
-  return saveDraft(principal, id, input, false);
+  return (await saveDraft(principal, id, input, false)).entry;
 }
 
 export function publishDataItem(
@@ -122,6 +190,35 @@ export function publishDataItem(
   input: unknown,
 ) {
   return saveDraft(principal, id, input, true);
+}
+
+export async function syncPublishedDataItemModels(
+  principal: Principal,
+  code: string,
+) {
+  requireAdmin(principal);
+  return db.$transaction(
+    async (tx) => {
+      const [item] = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "DataItem" WHERE code = ${code} FOR UPDATE
+    `;
+      if (!item) throw new RequestError("数据项不存在", 404);
+      const [current] = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "DataItemVersion"
+      WHERE "dataItemId" = ${item.id}::uuid AND status = 'PUBLISHED' AND "retiredAt" IS NULL
+      FOR SHARE
+    `;
+      if (!current) throw new RequestError("该数据项没有可用的发布版本", 409);
+      const entry = await getVersion(tx, current.id);
+      const modelChanges = await upgradeLinkedModels(
+        tx,
+        principal.userId,
+        toDataItemEntry(entry),
+      );
+      return { entry, modelChanges };
+    },
+    { timeout: 30_000 },
+  );
 }
 
 export async function createNextDataItemVersion(

@@ -12,8 +12,17 @@ export async function POST(
   try {
     const principal = await requirePlatformAdmin(request.headers);
     const id = z.uuid().parse((await params).id);
-    const entry = await publishDataItem(principal, id, await readJson(request));
-    return Response.json({ entry: toDataItemEntry(entry) });
+    const { entry, modelChanges, deletedVersions } = await publishDataItem(
+      principal,
+      id,
+      await readJson(request),
+    );
+    return Response.json({
+      entry: toDataItemEntry(entry),
+      modelChanges,
+      templateChanges: modelChanges.filter(({ scope }) => scope === "PUBLIC"),
+      deletedVersions,
+    });
   } catch (error) {
     return errorResponse(error);
   }

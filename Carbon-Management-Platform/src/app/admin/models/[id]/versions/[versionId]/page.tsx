@@ -10,9 +10,11 @@ export default async function PublicModelVersionPage({
 }) {
   const principal = await requirePlatformAdmin(await headers());
   const { id, versionId } = await params;
-  const { model, version } = await loadModelVersionPage(id, versionId, {
-    kind: "PLATFORM",
-  });
+  const { model, version, dataItemsToReview } = await loadModelVersionPage(
+    id,
+    versionId,
+    { kind: "PLATFORM" },
+  );
 
   return (
     <ModelVersionEditor
@@ -23,6 +25,7 @@ export default async function PublicModelVersionPage({
       canReview
       currentUserId={principal.userId}
       backHref="/admin/models"
+      dataItemsToReview={dataItemsToReview}
     />
   );
 }

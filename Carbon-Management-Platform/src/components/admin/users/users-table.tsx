@@ -1,3 +1,4 @@
+import { formatBeijingTime } from "@/shared/beijing-time";
 import { PlusOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -121,7 +122,7 @@ export function UsersTable({
             title: "创建时间",
             dataIndex: "createdAt",
             width: 180,
-            render: (value: string) => new Date(value).toLocaleString("zh-CN"),
+            render: (value: string) => formatBeijingTime(value),
           },
           {
             title: "状态",

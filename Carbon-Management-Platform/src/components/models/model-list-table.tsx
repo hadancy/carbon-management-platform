@@ -1,18 +1,13 @@
 "use client";
 
+import { formatBeijingTime } from "@/shared/beijing-time";
 import Link from "next/link";
 import { Button, Popconfirm, Space, Table, Tag, Typography } from "antd";
 import type { ModelRow, ModelVersionView, ModelView } from "./types";
 import { modelVersionHref, statusLabels } from "./types";
 
-const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-
 function publishedDate(value: string | null) {
-  return value ? dateFormatter.format(new Date(value)) : "—";
+  return value ? formatBeijingTime(value, "date") : "—";
 }
 
 function statusTag(status: ModelVersionView["status"]) {

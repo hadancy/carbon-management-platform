@@ -45,18 +45,26 @@ export default async function AccountingCasePage({
       entry={JSON.parse(JSON.stringify(entry)) as CaseView}
       factors={factors.flatMap((factor) => {
         const parsed = calculationFactorSchema.safeParse(factor.content);
-        return parsed.success
-          ? [
-              {
-                id: factor.id,
-                label: `${factor.title} · ${factor.code} v${factor.version} · ${parsed.data.purpose === "TEST" ? "测试" : "正式"}`,
-                stage: parsed.data.applicability.stage,
-                unit: parsed.data.activityUnit,
-                subject: parsed.data.applicability.subject,
-                purpose: parsed.data.purpose,
-              },
-            ]
-          : [];
+        if (!parsed.success) return [];
+        const { activityUnit, applicability, purpose } = parsed.data;
+        const { stage, subject, region, technology, validFrom, validTo } =
+          applicability;
+        return [
+          {
+            id: factor.id,
+            label: `${factor.title} · ${factor.code} v${factor.version} · ${purpose === "TEST" ? "测试" : "正式"}`,
+            activityUnit,
+            purpose,
+            applicability: {
+              stage,
+              subject,
+              region,
+              technology,
+              validFrom,
+              validTo,
+            },
+          },
+        ];
       })}
       rules={rules.flatMap((rule) => {
         const parsed = pvRuleSchema.safeParse(rule.content);
@@ -65,6 +73,9 @@ export default async function AccountingCasePage({
               {
                 id: rule.id,
                 label: `${rule.title} · v${rule.version} · ${parsed.data.purpose === "TEST" ? "测试" : "正式"}`,
+                purpose: parsed.data.purpose,
+                effectiveFrom: parsed.data.effectiveFrom,
+                effectiveTo: parsed.data.effectiveTo,
               },
             ]
           : [];

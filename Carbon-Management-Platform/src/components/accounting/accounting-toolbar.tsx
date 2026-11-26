@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Button, Space, Typography } from "antd";
 import type { CaseView } from "./types";
 import type { useAccountingActions } from "./use-accounting-actions";
@@ -7,11 +8,13 @@ export function AccountingToolbar({
   flow,
   canWrite,
   onReview,
+  draftTools,
 }: {
   entry: CaseView;
   flow: ReturnType<typeof useAccountingActions>;
   canWrite: boolean;
   onReview: (decision: "APPROVE" | "REJECT") => void;
+  draftTools: ReactNode;
 }) {
   const approved = entry.revisions.find(
     (revision) => revision.status === "APPROVED",
@@ -40,6 +43,7 @@ export function AccountingToolbar({
             >
               试算
             </Button>
+            {draftTools}
             <Button
               type="primary"
               onClick={() => void flow.calculate("PRODUCTION")}

@@ -2,6 +2,11 @@
 import { useState } from "react";
 import { Alert, App, Button, Form, Input, Modal, Space, Upload } from "antd";
 import {
+  AccountingDatePicker,
+  normalizeAccountingDate,
+  requiredAccountingDateRule,
+} from "./accounting-date-picker";
+import {
   energyCsv,
   generateEnergyRows,
   parseEnergyCsv,
@@ -95,8 +100,9 @@ export function AnnualEnergyTools({
           disabled={disabled}
           onClick={() => {
             form.setFieldsValue({
-              first:
-                rows.find((row) => row.operatingYear === 1)?.periodStart ?? "",
+              first: normalizeAccountingDate(
+                rows.find((row) => row.operatingYear === 1)?.periodStart,
+              ),
               value: "",
               evidence: "",
               method: "",
@@ -150,9 +156,9 @@ export function AnnualEnergyTools({
           <Form.Item
             name="first"
             label="第 1 运行年起始日期"
-            rules={[{ required: true, message: "请填写起始日期" }]}
+            rules={[requiredAccountingDateRule]}
           >
-            <Input placeholder="YYYY-MM-DD" />
+            <AccountingDatePicker />
           </Form.Item>
           <Form.Item
             name="value"

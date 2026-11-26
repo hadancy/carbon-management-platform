@@ -29,19 +29,19 @@ export async function verifyDataItemsBrowser({ baseURL, adminCookie }) {
   });
   page.setDefaultTimeout(15_000);
   const dialog = () => page.getByRole("dialog");
-  const row = (version) =>
-    page
-      .getByRole("row")
-      .filter({ hasText: "SYN_UI_ITEM" })
-      .filter({ has: page.getByText(`v${version}`, { exact: true }) });
+  const itemRow = (code = "SYN_UI_ITEM") =>
+    page.getByRole("row").filter({ hasText: code });
+  const details = () => page.getByRole("dialog", { name: "公共数据项详情" });
   async function submit(name, status) {
-    const response = page.waitForResponse(
-      (result) =>
-        result.url().includes("/api/admin/data-items") &&
-        result.request().method() !== "GET",
-    );
-    await dialog().getByRole("button", { name, exact: true }).click();
-    assert.equal((await response).status(), status);
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (result) =>
+          result.url().includes("/api/admin/data-items") &&
+          result.request().method() !== "GET",
+      ),
+      dialog().getByRole("button", { name, exact: true }).click(),
+    ]);
+    assert.equal(response.status(), status);
     await dialog().waitFor({ state: "hidden" });
   }
   try {
@@ -60,16 +60,16 @@ export async function verifyDataItemsBrowser({ baseURL, adminCookie }) {
       .getByLabel("数据名称", { exact: true })
       .fill("SYN 界面验证柴油");
     await submit("保存草稿", 201);
-    await row(1).getByText("草稿", { exact: true }).waitFor();
+    await itemRow().getByText("v1 草稿", { exact: true }).waitFor();
 
-    await row(1)
+    await itemRow()
       .getByRole("button", { name: /编\s*辑/ })
       .click();
     await dialog().getByLabel("规格型号", { exact: true }).fill("UI-SYN-01");
     await submit("保存草稿", 200);
-    await row(1).getByText("UI-SYN-01", { exact: true }).waitFor();
+    await itemRow().getByText("UI-SYN-01", { exact: true }).waitFor();
 
-    await row(1)
+    await itemRow()
       .getByRole("button", { name: /发\s*布/ })
       .click();
     await dialog()
@@ -105,9 +105,9 @@ export async function verifyDataItemsBrowser({ baseURL, adminCookie }) {
       fullPage: true,
     });
     await submit("校验并发布", 200);
-    await row(1).getByText("已发布", { exact: true }).waitFor();
+    await itemRow().getByText("v1", { exact: true }).waitFor();
 
-    await row(1)
+    await itemRow()
       .getByRole("button", { name: "创建新版本", exact: true })
       .click();
     assert.equal(
@@ -120,15 +120,22 @@ export async function verifyDataItemsBrowser({ baseURL, adminCookie }) {
       .getByLabel("排放因子数值（可选）", { exact: true })
       .fill("2.9");
     await submit("保存草稿", 201);
-    await row(2).getByText("草稿", { exact: true }).waitFor();
-    await row(1)
-      .getByRole("button", { name: /查\s*看/ })
+    await itemRow().getByText("v2 草稿", { exact: true }).waitFor();
+    await itemRow().getByText("v1", { exact: true }).waitFor();
+    assert.equal(await itemRow().count(), 1);
+    await page.screenshot({
+      path: join(artifacts, "data-item-with-draft.png"),
+      animations: "disabled",
+      fullPage: true,
+    });
+    await itemRow()
+      .getByRole("button", { name: /^查\s*看$/ })
       .click();
-    await dialog().getByText("2.68 kgCO₂e/L", { exact: true }).waitFor();
-    await page.locator(".ant-drawer-close").click();
+    await details().getByText("2.68 kgCO₂e/L", { exact: true }).waitFor();
+    await details().locator(".ant-drawer-close").click();
     await dialog().waitFor({ state: "hidden" });
 
-    await row(1)
+    await itemRow()
       .getByRole("button", { name: /停\s*用/ })
       .click();
     await dialog()
@@ -139,7 +146,7 @@ export async function verifyDataItemsBrowser({ baseURL, adminCookie }) {
       .getByLabel("停用原因", { exact: true })
       .fill("SYN 界面验证停用原因");
     await submit("确认停用", 200);
-    await row(1).getByText("已停用", { exact: true }).waitFor();
+    await itemRow().getByText("已停用", { exact: true }).waitFor();
     await page.screenshot({
       path: join(artifacts, "version-list.png"),
       fullPage: true,
@@ -149,7 +156,32 @@ export async function verifyDataItemsBrowser({ baseURL, adminCookie }) {
     await page.getByRole("button", { name: /搜\s*索/ }).click();
     await page.getByText("没有符合筛选条件的数据项", { exact: true }).waitFor();
     await page.getByRole("button", { name: /重\s*置/ }).click();
-    await row(1).getByText("已停用", { exact: true }).waitFor();
+    await itemRow().getByText("已停用", { exact: true }).waitFor();
+    await itemRow().getByRole("button", { name: "历史版本（1）" }).click();
+    const retiredHistory = page.getByRole("dialog", {
+      name: "SYN 界面验证柴油 · 历史版本",
+    });
+    await retiredHistory
+      .getByText("SYN 界面验证停用原因", { exact: true })
+      .waitFor();
+    await retiredHistory.getByText("2.68 kgCO₂e/L", { exact: true }).waitFor();
+    await retiredHistory.getByRole("button", { name: /^查\s*看$/ }).click();
+    await details().getByText("该版本已停用", { exact: true }).waitFor();
+    await details().locator(".ant-drawer-close").click();
+    await details().waitFor({ state: "hidden" });
+    await retiredHistory.locator(".ant-drawer-close").click();
+    await retiredHistory.waitFor({ state: "hidden" });
+    await itemRow()
+      .getByRole("button", { name: /发\s*布/ })
+      .click();
+    await submit("校验并发布", 200);
+    await itemRow().getByText("v2", { exact: true }).waitFor();
+    await itemRow()
+      .getByRole("button", { name: "历史版本（1）" })
+      .waitFor({ state: "hidden" });
+    await page
+      .getByText("1 个从未被引用的旧版本已删除", { exact: true })
+      .waitFor();
     await page.setViewportSize({ width: 390, height: 844 });
     assert.ok(
       await page.evaluate(
@@ -161,6 +193,55 @@ export async function verifyDataItemsBrowser({ baseURL, adminCookie }) {
       path: join(artifacts, "mobile-list.png"),
       fullPage: true,
     });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(
+      baseURL + "/admin/data-items?q=SYNC_&status=RETIRED&pageSize=1",
+    );
+    await page.getByText("共 2 个数据项", { exact: true }).waitFor();
+    await itemRow("SYNC_B").getByText("v3", { exact: true }).waitFor();
+    await itemRow("SYNC_A").waitFor({ state: "hidden" });
+    await page.locator(".ant-pagination-item-2").click();
+    await itemRow("SYNC_A").getByText("v3", { exact: true }).waitFor();
+    await itemRow("SYNC_B").waitFor({ state: "hidden" });
+
+    await page.goto(baseURL + "/admin/data-items?q=SYNC_");
+    await itemRow("SYNC_A")
+      .getByRole("button", { name: "历史版本（2）" })
+      .waitFor();
+    await itemRow("SYNC_B")
+      .getByRole("button", { name: "历史版本（2）" })
+      .waitFor();
+    await page.screenshot({
+      path: join(artifacts, "grouped-list.png"),
+      animations: "disabled",
+      fullPage: true,
+    });
+    await itemRow("SYNC_B")
+      .getByRole("button", { name: "历史版本（2）" })
+      .click();
+    const groupedHistory = page.getByRole("dialog", {
+      name: "SYNC 钢材 · 历史版本",
+    });
+    await groupedHistory
+      .getByText("共 2 个历史版本", { exact: true })
+      .waitFor();
+    assert.deepEqual(
+      await groupedHistory
+        .getByRole("cell", { name: /^v[12]$/ })
+        .allTextContents(),
+      ["v2", "v1"],
+    );
+    await page.screenshot({
+      path: join(artifacts, "grouped-history.png"),
+      animations: "disabled",
+      fullPage: true,
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    );
     assert.deepEqual(errors, []);
     writeFileSync(
       join(artifacts, "result.json"),
@@ -177,6 +258,11 @@ export async function verifyDataItemsBrowser({ baseURL, adminCookie }) {
             "new-version",
             "frozen-v1",
             "retirement-reason",
+            "unused-retired-version-cleanup",
+            "current-and-draft-in-one-row",
+            "same-name-different-codes",
+            "grouped-pagination-and-history-filter",
+            "history-drawer-details",
             "search",
             "reset",
             "390px-no-overflow",

@@ -1,14 +1,25 @@
 "use client";
-import { useState } from "react";
+import { formatBeijingTime } from "@/shared/beijing-time";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Alert, Card, Form, Select, Space, Tabs, Tag, Typography } from "antd";
 import { ACCOUNTING_STATUS_LABELS } from "@/shared/accounting";
-import type { AccountingInputs } from "@/shared/accounting";
-import type { CaseView, FactorOption, RevisionView, RuleOption } from "./types";
+import { modelRows, type ModelRow } from "@/domain/calculation/model-rows";
+import { productionReadiness } from "@/domain/calculation/production-readiness";
+import type { CalculationDiagnostic } from "@/domain/calculation/pv-contract";
+import type {
+  AccountingFormValues,
+  CaseView,
+  FactorOption,
+  RevisionView,
+  RuleOption,
+} from "./types";
 import { ActivityLines } from "./activity-lines";
-import { modelRows } from "./model-rows";
-import { AnnualEnergyEditor } from "./annual-energy";
+import {
+  AnnualEnergyEditor,
+  type AnnualEnergyEditRequest,
+} from "./annual-energy";
 import { CaseMethodForm } from "./case-method-form";
 import { RunResults } from "./run-results";
 import { useAccountingActions } from "./use-accounting-actions";
@@ -16,21 +27,42 @@ import { AccountingToolbar } from "./accounting-toolbar";
 import { AccountingReviewDialog } from "./accounting-review-dialog";
 import { AccountingHistory } from "./accounting-history";
 import { EvidenceLibrary } from "./evidence-library";
-import { AccountingDiagnostics } from "./accounting-diagnostics";
-function preparedInputs(revision: RevisionView): AccountingInputs {
+import {
+  AccountingDiagnostics,
+  accountingIssueTarget,
+  accountingSection,
+} from "./accounting-diagnostics";
+import { ProductionChecklist } from "./production-checklist";
+import { BatchEvidenceDialog } from "./batch-evidence-dialog";
+import { normalizeAccountingDate } from "./accounting-date-picker";
+function preparedInputs(
+  revision: RevisionView,
+  rows: readonly ModelRow[],
+): AccountingFormValues {
   const saved = revision.inputs;
   const byId = new Map(saved.lines.map((line) => [line.itemId, line]));
   return {
     ...saved,
-    lines: modelRows(revision.modelVersion.content).map(
-      (row) =>
-        byId.get(row.id) ?? {
-          itemId: row.id,
-          state: "RECORDED",
-          unit: row.unit,
-          evidenceAssetIds: [],
-        },
-    ),
+    ruleVersionId: revision.ruleVersionId,
+    collectionStart: normalizeAccountingDate(saved.collectionStart),
+    collectionEnd: normalizeAccountingDate(saved.collectionEnd),
+    referenceDate: normalizeAccountingDate(saved.referenceDate),
+    lines: rows.map((row) => {
+      const line = byId.get(row.id);
+      if (line) {
+        return {
+          ...line,
+          activityDate:
+            line.activityDate && normalizeAccountingDate(line.activityDate),
+        };
+      }
+      return {
+        itemId: row.id,
+        state: "RECORDED",
+        unit: row.unit,
+        evidenceAssetIds: [],
+      };
+    }),
   };
 }
 export function AccountingEditor({
@@ -50,30 +82,102 @@ export function AccountingEditor({
 }) {
   const searchParams = useSearchParams();
   const chosen = searchParams.get("section");
+  const activityItemId = searchParams.get("activity");
   const section =
     chosen && ["method", "activities", "energy"].includes(chosen)
       ? chosen
       : "method";
+  const revision = entry.revisions.find(
+    (item) => item.id === entry.currentRevisionId,
+  )!;
+  const content = revision.modelVersion.content;
+  const rows = useMemo(() => modelRows(content), [content]);
+  const initialValues = useMemo(
+    () => preparedInputs(revision, rows),
+    [revision, rows],
+  );
+  const catalogue = useMemo(
+    () => ({
+      factors: new Map(factors.map((factor) => [factor.id, factor])),
+      rules: new Map(rules.map((rule) => [rule.id, rule])),
+    }),
+    [factors, rules],
+  );
+  const [annualEdit, setAnnualEdit] = useState<AnnualEnergyEditRequest | null>(
+    null,
+  );
+  const [fieldFocus, setFieldFocus] = useState<{
+    section: ReturnType<typeof accountingSection>;
+    name: (string | number)[];
+    itemId?: string;
+  } | null>(null);
   const flow = useAccountingActions(
     entry,
     canWrite,
     canReview,
     currentUserId,
-    (name) =>
-      selectSection(
-        name === "lines"
-          ? "activities"
-          : name === "annualEnergy"
-            ? "energy"
-            : "method",
-      ),
+    goToField,
+    getProductionIssues,
   );
   const [review, setReview] = useState<"APPROVE" | "REJECT" | null>(null);
-  const revision = flow.revision;
-  function selectSection(value: string) {
-    const params = new URLSearchParams(searchParams.toString());
+
+  useEffect(() => {
+    if (fieldFocus?.section !== section) return;
+    if (fieldFocus.itemId && fieldFocus.itemId !== activityItemId) return;
+    const frame = requestAnimationFrame(() => {
+      flow.form.scrollToField(fieldFocus.name, {
+        focus: true,
+        block: "center",
+      });
+      setFieldFocus((current) => (current === fieldFocus ? null : current));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [activityItemId, fieldFocus, flow.form, section]);
+
+  function getProductionIssues(values: AccountingFormValues) {
+    const ruleVersionId = values.ruleVersionId;
+    const { requirements, problems } = productionReadiness(values, {
+      rows,
+      ruleVersionId,
+      rule: ruleVersionId ? catalogue.rules.get(ruleVersionId) : undefined,
+      factors: catalogue.factors,
+    });
+    return [...requirements, ...problems];
+  }
+
+  function selectSection(value: string, itemId?: string) {
+    const params = new URLSearchParams(window.location.search);
     params.set("section", value);
+    if (itemId) params.set("activity", itemId);
     window.history.replaceState(null, "", `?${params.toString()}`);
+  }
+
+  function goToField(name: (string | number)[]) {
+    const destination = accountingSection(String(name[0]));
+    const itemId =
+      name[0] === "lines" && typeof name[1] === "number"
+        ? rows[name[1]]?.id
+        : undefined;
+    selectSection(destination, itemId);
+    setFieldFocus({ section: destination, name, itemId });
+  }
+
+  function goToIssue(issue: CalculationDiagnostic) {
+    const target = accountingIssueTarget(
+      issue,
+      rows,
+      flow.form.getFieldValue("annualEnergy") ?? [],
+    );
+    if (target.annualEdit && flow.editable) {
+      selectSection("energy");
+      setFieldFocus(null);
+      setAnnualEdit(target.annualEdit);
+    } else if (target.name) {
+      goToField(target.name);
+    } else {
+      selectSection(accountingSection(issue.path));
+      setFieldFocus(null);
+    }
   }
   return (
     <EvidenceLibrary>
@@ -109,6 +213,26 @@ export function AccountingEditor({
           flow={flow}
           canWrite={canWrite}
           onReview={setReview}
+          draftTools={
+            <>
+              <BatchEvidenceDialog
+                accountingForm={flow.form}
+                rows={rows}
+                onApplied={flow.markDirty}
+              />
+              <ProductionChecklist
+                form={flow.form}
+                rows={rows}
+                getIssues={getProductionIssues}
+                additionalIssues={flow.productionErrors}
+                dirty={flow.dirty}
+                open={flow.productionCheckOpen}
+                onOpen={() => void flow.openProductionCheck()}
+                onClose={flow.closeProductionCheck}
+                onIssue={goToIssue}
+              />
+            </>
+          }
         />
         {flow.dirty && (
           <Alert
@@ -127,26 +251,19 @@ export function AccountingEditor({
         {flow.diagnostics.length > 0 && (
           <AccountingDiagnostics
             problems={flow.diagnostics}
-            content={revision.modelVersion.content}
-            form={flow.form}
-            onSection={selectSection}
+            rows={rows}
+            annual={flow.form.getFieldValue("annualEnergy") ?? []}
+            onIssue={goToIssue}
           />
         )}
         <Form
           form={flow.form}
           layout="vertical"
-          initialValues={preparedInputs(revision)}
-          onValuesChange={() => flow.setDirty(true)}
+          initialValues={initialValues}
+          onValuesChange={flow.markDirty}
           disabled={!flow.editable}
           onFinishFailed={({ errorFields }) => {
-            const first = errorFields[0]?.name?.[0];
-            selectSection(
-              first === "lines"
-                ? "activities"
-                : first === "annualEnergy"
-                  ? "energy"
-                  : "method",
-            );
+            if (errorFields[0]) goToField(errorFields[0].name);
           }}
         >
           <Tabs
@@ -158,15 +275,7 @@ export function AccountingEditor({
                 label: "基本信息与方法",
                 forceRender: true,
                 children: (
-                  <CaseMethodForm
-                    ruleVersionId={flow.ruleVersionId}
-                    rules={rules}
-                    disabled={!flow.editable}
-                    onRuleChange={(id) => {
-                      flow.setRuleVersionId(id);
-                      flow.setDirty(true);
-                    }}
-                  />
+                  <CaseMethodForm rules={rules} disabled={!flow.editable} />
                 ),
               },
               {
@@ -175,9 +284,11 @@ export function AccountingEditor({
                 forceRender: true,
                 children: (
                   <ActivityLines
-                    content={revision.modelVersion.content}
+                    rows={rows}
                     factors={factors}
                     disabled={!flow.editable}
+                    selectedItemId={activityItemId}
+                    onSelectItem={(id) => selectSection("activities", id)}
                   />
                 ),
               },
@@ -188,7 +299,9 @@ export function AccountingEditor({
                 children: (
                   <AnnualEnergyEditor
                     disabled={!flow.editable}
-                    onChange={() => flow.setDirty(true)}
+                    onChange={flow.markDirty}
+                    editRequest={annualEdit}
+                    onEditRequestClose={() => setAnnualEdit(null)}
                   />
                 ),
               },
@@ -207,7 +320,7 @@ export function AccountingEditor({
               options={entry.revisions.flatMap((item) =>
                 item.runs.map((run) => ({
                   value: run.id,
-                  label: `修订 v${item.revisionNo} · ${run.mode === "TRIAL" ? "试算" : "正式"} · ${new Date(run.createdAt).toLocaleString("zh-CN")}`,
+                  label: `修订 v${item.revisionNo} · ${run.mode === "TRIAL" ? "试算" : "正式"} · ${formatBeijingTime(run.createdAt)}`,
                 })),
               )}
               onChange={flow.setSelectedRunId}

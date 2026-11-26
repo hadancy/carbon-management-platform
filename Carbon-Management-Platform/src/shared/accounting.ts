@@ -14,10 +14,11 @@ export const ACCOUNTING_STAGE_LABELS = {
   TD: "输配电",
 } as const;
 export type AccountingStatus = keyof typeof ACCOUNTING_STATUS_LABELS;
+export const MAX_EVIDENCE_ASSETS = 20;
 
 const shortText = z.string().trim().max(200);
 const amount = z.string().trim().max(80);
-const assetIds = z.array(z.uuid()).max(20).default([]);
+const assetIds = z.array(z.uuid()).max(MAX_EVIDENCE_ASSETS).default([]);
 
 export const accountingInputsSchema = z.object({
   specification: shortText.default(""),

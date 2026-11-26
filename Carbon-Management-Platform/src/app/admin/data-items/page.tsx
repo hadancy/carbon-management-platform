@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { requirePlatformAdmin } from "@/server/auth/access";
-import { listDataItems } from "@/server/data-items/queries";
+import { listDataItemGroups } from "@/server/data-items/admin-queries";
 import { dataItemListQuerySchema } from "@/shared/data-items";
 import { DataItemsManager } from "@/components/admin/data-items/data-items-manager";
 
@@ -22,5 +22,5 @@ export default async function DataItemsPage({
   const query = parsed.success
     ? parsed.data
     : dataItemListQuerySchema.parse({});
-  return <DataItemsManager {...await listDataItems(principal, query)} />;
+  return <DataItemsManager {...await listDataItemGroups(principal, query)} />;
 }

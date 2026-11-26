@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/server/db/client";
 import { toModelView } from "./view";
+import { findNewerModelDataItems } from "./data-item-upgrades";
 
 export async function loadModelVersionPage(
   modelId: string,
@@ -49,5 +50,13 @@ export async function loadModelVersionPage(
   });
   if (!entry) notFound();
   const model = toModelView({ ...entry.model, versions: [entry] });
-  return { model, version: model.versions[0] };
+  const version = model.versions[0];
+  const newerItems =
+    version.status === "DRAFT" || version.status === "REJECTED"
+      ? await findNewerModelDataItems(db, version.content)
+      : null;
+  const dataItemsToReview = newerItems
+    ? [...newerItems.values()].map(({ code, version }) => `${code} v${version}`)
+    : [];
+  return { model, version, dataItemsToReview };
 }

@@ -1,3 +1,4 @@
+import { formatBeijingTime } from "../../shared/beijing-time";
 import type { ReportContent, ReportStatus } from "../../shared/reports";
 import { REPORT_STATUS_LABELS } from "../../shared/reports";
 import type { PublicTemplateSnapshot } from "../../shared/report-template";
@@ -35,19 +36,6 @@ export function displayReportNumber(
   threshold: string,
 ) {
   return flag ? "< " + threshold : value;
-}
-function reportDateTime(value: string, legacy: boolean) {
-  return legacy
-    ? value.slice(0, 10)
-    : new Intl.DateTimeFormat("zh-CN", {
-        timeZone: "America/New_York",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }).format(new Date(value));
 }
 export function defaultReportContent(
   source: ReportSource,
@@ -117,7 +105,7 @@ export function buildReportDocument(
     reviewNote: meta.reviewedAt
       ? (meta.reviewerName ?? "审核人") +
         " / " +
-        reportDateTime(meta.reviewedAt, legacy) +
+        formatBeijingTime(meta.reviewedAt, legacy ? "date" : "minute") +
         " / " +
         (meta.reviewReason ?? "")
       : "尚未完成报告审核",
@@ -166,7 +154,10 @@ export function buildReportDocument(
         "核算复核",
         source.accountingReview.actorName +
           " / " +
-          reportDateTime(source.accountingReview.reviewedAt, legacy) +
+          formatBeijingTime(
+            source.accountingReview.reviewedAt,
+            legacy ? "date" : "minute",
+          ) +
           " / " +
           source.accountingReview.reason,
       ],
